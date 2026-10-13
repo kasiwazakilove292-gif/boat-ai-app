@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102a43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BOAT AI LAB">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>BOAT AI LAB</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172b3a;background:#f3f6f9}
+*{box-sizing:border-box}body{margin:0;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{background:#102a43;color:#fff;padding:20px 16px 18px}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#d9eaf7;font-size:13px}
+main{max-width:760px;margin:auto;padding:14px 12px 32px}.nav{display:flex;gap:7px;overflow:auto;margin-bottom:12px}
+.nav button{white-space:nowrap;border:0;background:#dfe7ef;color:#234;padding:10px 13px;border-radius:12px;font-weight:650}
+.nav button.active{background:#102a43;color:white}.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px #102a430d}
+h2{font-size:17px;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:13px;color:#435667;margin-bottom:5px}input,select{width:100%;font:inherit;padding:11px;border:1px solid #cad5df;border-radius:10px;background:#fff;color:#172b3a}
+.field{margin-bottom:11px}.wide{grid-column:1/-1}.btn{border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:700;background:#1769aa;color:#fff;width:100%;margin-top:3px}
+.btn.secondary{background:#e7edf3;color:#24394b}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metric{background:#f1f5f8;border-radius:12px;padding:12px}.metric small{display:block;color:#536779}.metric strong{display:block;font-size:22px;margin-top:5px}
+.muted{font-size:12px;color:#647788;line-height:1.5}.warn{background:#fff5df;color:#79520c;padding:11px;border-radius:10px;font-size:13px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:8px 5px;border-bottom:1px solid #e4eaf0}th{color:#5a6d7c}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.pill{font-size:11px;border-radius:20px;padding:4px 8px;background:#e8eef4}
+.hidden{display:none!important}.record{border-top:1px solid #e4eaf0;padding:10px 0}.record:first-child{border-top:0}
+footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
+@media(min-width:600px){main{padding:20px}.grid{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<header><h1>🚤 BOAT AI LAB</h1><p>買い目記録・結果管理・回収率チェック</p></header>
+<main>
+<div class="nav">
+<button class="active" data-tab="predict">買い目記録</button>
+<button data-tab="results">結果入力</button>
+<button data-tab="stats">成績</button>
+</div>
+<section id="predict">
+<div class="card">
+<h2>ペーパーテスト用の記録</h2>
+<div class="warn">この初期版は買い目の記録・集計用です。自動予想や公式データ取得、自動投票はありません。実際の購入前に、過去データで十分に検証してください。</div>
+<form id="pickForm" style="margin-top:14px">
+<div class="grid">
+<div class="field"><label>レース日</label><input id="raceDate" type="date" required></div>
+<div class="field"><label>競艇場</label><select id="venue"><option>大村</option><option>唐津</option><option>福岡</option><option>住之江</option><option>尼崎</option><option>児島</option><option>その他</option></select></div>
+<div class="field"><label>レース番号</label><select id="raceNo"></select></div>
+<div class="field"><label>券種</label><select id="betType"><option>3連単</option><option>2連単</option><option>3連複</option></select></div>
+<div class="field"><label>買い目</label><input id="combination" placeholder="例：1-2-3" required></div>
+<div class="field"><label>オッズ（倍）</label><input id="odds" type="number" min="1" max="10000" step=".1" value="10" required></div>
+<div class="field"><label>推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".1" value="10" required></div>
+<div class="field"><label>購入候補額（円）</label><input id="stake" type="number" min="0" max="5000" step="100" value="100" required></div>
+<div class="field wide"><label>メモ（任意）</label><input id="notes" placeholder="展示・風・予想理由など"></div>
+</div>
+<div class="metrics">
+<div class="metric"><small>単純期待回収率</small><strong id="ev">100.0%</strong></div>
+<div class="metric"><small>1点100円あたり期待損益</small><strong id="profit">¥0</strong></div>
+</div>
+<p class="muted">期待回収率＝推定確率 × オッズ。確率が正しく推定できていなければ、数値も信頼できません。</p>
+<button class="btn" type="submit">ペーパーテストに記録</button>
+</form>
+</div>
+</section>
+<section id="results" class="hidden">
+<div class="card"><h2>未確定の結果を入力</h2><div id="pending"></div></div>
+</section>
+<section id="stats" class="hidden">
+<div class="card"><h2>成績サマリー</h2><div class="metrics">
+<div class="metric"><small>回収率</small><strong id="roi">—</strong></div>
+<div class="metric"><small>収支</small><strong id="net">—</strong></div>
+<div class="metric"><small>確定記録</small><strong id="count">0件</strong></div>
+<div class="metric"><small>的中率（記録単位）</small><strong id="hit">—</strong></div>
+</div><p class="muted">返還は投資額から除外して計算します。払戻は購入額に対する総払戻額を入力してください。</p></div>
+<div class="card"><div class="row"><h2 style="margin:0">記録一覧</h2><button id="export" class="btn secondary" style="width:auto;margin:0">CSV出力</button></div><div id="history" style="overflow:auto;margin-top:10px"></div><button id="clear" class="btn secondary">全記録を削除</button></div>
+</section>
+<footer>データはこの端末のブラウザ内に保存されます。ブラウザデータを消去すると記録も消えるため、定期的にCSV保存してください。利益は保証されません。</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const STORE="boat_ai_pwa_v1";
+let records=JSON.parse(localStorage.getItem(STORE)||"[]");
+for(let i=1;i<=12;i++) $("raceNo").add(new Option(i+"R",i));
+$("raceDate").value=new Date().toLocaleDateString("sv-SE");
+function save(){localStorage.setItem(STORE,JSON.stringify(records));render();}
+function yen(v){return "¥"+Math.round(v).toLocaleString("ja-JP")}
+function evUpdate(){const p=Number($("prob").value||0)/100,o=Number($("odds").value||0);const ev=p*o*100;$("ev").textContent=ev.toFixed(1)+"%";$("profit").textContent=yen(ev-100);$("ev").style.color=ev>=100?"#087443":"#9b3b28";}
+$("prob").addEventListener("input",evUpdate);$("odds").addEventListener("input",evUpdate);evUpdate();
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x===b));["predict","results","stats"].forEach(t=>$(t).classList.toggle("hidden",t!==b.dataset.tab));render();});
+$("pickForm").onsubmit=e=>{e.preventDefault();const stake=Number($("stake").value);if(stake>5000){alert("1レース上限は5,000円です");return;}records.unshift({id:Date.now(),created:new Date().toISOString(),date:$("raceDate").value,venue:$("venue").value,raceNo:Number($("raceNo").value),betType:$("betType").value,combination:$("combination").value.trim(),odds:Number($("odds").value),probability:Number($("prob").value)/100,stake,result:"未確定",payout:0,notes:$("notes").value});save();$("combination").value="";$("notes").value="";alert("記録しました。実際の舟券購入は行っていません。");};
+function render(){
+ const pending=records.filter(r=>r.result==="未確定");
+ $("pending").innerHTML=pending.length?pending.map(r=>`<div class="record"><div class="row"><b>${r.date} ${r.venue} ${r.raceNo}R</b><span class="pill">${r.betType}</span></div><p style="margin:6px 0">${r.combination}｜${yen(r.stake)}｜オッズ ${r.odds}</p><div class="grid"><div class="field"><label>結果</label><select id="res${r.id}"><option>不的中</option><option>的中</option><option>返還</option></select></div><div class="field"><label>総払戻額（円）</label><input id="pay${r.id}" type="number" min="0" step="100" value="${Math.round(r.stake*r.odds)}"></div><div class="wide"><button class="btn" onclick="settle(${r.id})">結果を保存</button></div></div></div>`).join(""):"<p class='muted'>未確定の記録はありません。</p>";
+ const settled=records.filter(r=>["的中","不的中","返還"].includes(r.result));
+ const invest=settled.filter(r=>r.result!=="返還").reduce((s,r)=>s+r.stake,0), payout=settled.reduce((s,r)=>s+r.payout,0), net=payout-invest;
+ const decided=settled.filter(r=>r.result!=="返還"),hits=decided.filter(r=>r.result==="的中").length;
+ $("roi").textContent=invest?(payout/invest*100).toFixed(1)+"%":"—";$("net").textContent=invest||payout?yen(net):"—";$("net").style.color=net>=0?"#087443":"#9b3b28";$("count").textContent=decided.length+"件";$("hit").textContent=decided.length?(hits/decided.length*100).toFixed(1)+"%":"—";
+ $("history").innerHTML=records.length?`<table><thead><tr><th>日付・場</th><th>券種・買い目</th><th>投資</th><th>結果</th><th>払戻</th></tr></thead><tbody>${records.map(r=>`<tr><td>${r.date}<br>${r.venue} ${r.raceNo}R</td><td>${r.betType}<br>${r.combination}<br><small>オッズ ${r.odds} / 確率 ${(r.probability*100).toFixed(1)}%</small></td><td>${yen(r.stake)}</td><td>${r.result}</td><td>${yen(r.payout)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>記録はまだありません。</p>";
+}
+window.settle=id=>{const r=records.find(x=>x.id===id);if(!r)return;const result=$("res"+id).value;let payout=Number($("pay"+id).value||0);if(result==="不的中")payout=0;if(result==="返還")payout=r.stake;if(result==="的中"&&payout<0){alert("払戻額を確認してください");return;}r.result=result;r.payout=payout;save();};
+$("export").onclick=()=>{const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes"];const esc=x=>'"'+String(x??"").replaceAll('"','""')+'"';const csv=[cols.join(","),...records.map(r=>cols.map(c=>esc(r[c])).join(","))].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="boat_ai_records.csv";a.click();URL.revokeObjectURL(a.href);};
+$("clear").onclick=()=>{if(confirm("全記録を削除します。CSV保存しましたか？")){records=[];save();}};
+render();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body></html>
