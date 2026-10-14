@@ -119,11 +119,12 @@ jobs:
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
         run: python collect_data.py
 
-      - name: Test motor data collection
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'motor_test'
+      - name: Collect motor information
+        if: github.event_name == 'schedule' || github.event.inputs.mode == 'motor_test'
         run: python collect_motor.py
 
       - name: Save CSV and history progress
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
