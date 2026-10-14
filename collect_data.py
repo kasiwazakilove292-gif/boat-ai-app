@@ -1,7 +1,7 @@
 from urllib.request import Request, urlopen
 from html.parser import HTMLParser
 
-URL = "https://www1.mbrace.or.jp/od2/K/dindex.html"
+URL = "https://www1.mbrace.or.jp/od2/K/dmenu.html"
 
 request = Request(
     URL,
