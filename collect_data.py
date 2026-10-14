@@ -1,20 +1,28 @@
 from pathlib import Path
+import subprocess
+import shutil
 
-FILE = Path("k260901.lzh")
+archive = Path("k260901.lzh")
+output_dir = Path("data")
+output_dir.mkdir(exist_ok=True)
 
-print("大村競艇AI：競走成績ファイル確認")
+print("大村競艇AI：競走成績の解凍開始")
 
-if not FILE.exists():
-    print("ファイルがまだGitHubにありません")
-    print("次の手順でアップロードします")
-else:
-    data = FILE.read_bytes()
-    print("ファイル名:", FILE.name)
-    print("ファイルサイズ:", len(data), "bytes")
+if not archive.exists():
+    raise FileNotFoundError("k260901.lzh が見つかりません")
 
-    if b"-lh" in data[:100]:
-        print("LZH形式のファイルを確認しました")
-    else:
-        print("ファイル形式を確認してください")
+if not shutil.which("bsdtar"):
+    raise RuntimeError("bsdtar が必要です")
 
-print("確認終了")
+subprocess.run(
+    ["bsdtar", "-xf", str(archive), "-C", str(output_dir)],
+    check=True
+)
+
+print("解凍成功！")
+
+for file in output_dir.iterdir():
+    print("取り出したファイル:", file.name)
+    print("ファイルサイズ:", file.stat().st_size, "bytes")
+
+print("解凍処理完了")
