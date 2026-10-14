@@ -63,7 +63,7 @@ for line in omura.splitlines():
     )
     if match:
         results.append([
-            "2026-09-01",
+            date_str,
             int(match.group(1)),
             match.group(2),
             int(match.group(3))
