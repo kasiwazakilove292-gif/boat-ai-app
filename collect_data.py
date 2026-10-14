@@ -1,30 +1,20 @@
-from urllib.request import Request, urlopen
-from html.parser import HTMLParser
+from pathlib import Path
 
-URL = "https://www1.mbrace.or.jp/od2/K/dmenu.html"
+FILE = Path("k260901.lzh")
 
-request = Request(
-    URL,
-    headers={"User-Agent": "Mozilla/5.0"}
-)
+print("大村競艇AI：競走成績ファイル確認")
 
-with urlopen(request, timeout=30) as response:
-    data = response.read()
-    print("HTTPステータス:", response.status)
-    print("最終URL:", response.url)
-    print("データサイズ:", len(data), "bytes")
+if not FILE.exists():
+    print("ファイルがまだGitHubにありません")
+    print("次の手順でアップロードします")
+else:
+    data = FILE.read_bytes()
+    print("ファイル名:", FILE.name)
+    print("ファイルサイズ:", len(data), "bytes")
 
-html = data.decode("cp932", errors="replace")
+    if b"-lh" in data[:100]:
+        print("LZH形式のファイルを確認しました")
+    else:
+        print("ファイル形式を確認してください")
 
-class PageInspector(HTMLParser):
-    def handle_starttag(self, tag, attrs):
-        if tag.lower() in ("a", "form", "input", "select", "option", "script"):
-            print("タグ:", tag, "属性:", attrs)
-
-print("=== ページ構造の確認 ===")
-PageInspector().feed(html)
-
-print("=== HTML先頭500文字 ===")
-print(html[:500])
-
-print("調査完了")
+print("確認終了")
