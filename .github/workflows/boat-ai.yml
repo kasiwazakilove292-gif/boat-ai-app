@@ -16,7 +16,7 @@ on:
       mode:
         description: "Collection mode"
         required: true
-        default: "manual"
+        default: "history"
         type: choice
         options:
           - manual
@@ -57,7 +57,7 @@ jobs:
           INPUT_DAYS: ${{ github.event.inputs.collect_days }}
           INPUT_MODE: ${{ github.event.inputs.mode }}
         run: |
-          if [ "$INPUT_MODE" = "history" ]; then
+          if [ "$INPUT_MODE" = "history" ] || [ "${{ github.event_name }}" = "schedule" ]; then
             if [ -f data/history_cursor.txt ]; then
               RACE_DATE=$(cat data/history_cursor.txt)
             else
@@ -66,18 +66,21 @@ jobs:
             COLLECT_DAYS=7
             NEXT_DATE=$(date -d "$RACE_DATE +7 days" +%F)
             echo "$NEXT_DATE" > data/history_cursor.txt
-          elif [ -n "$INPUT_DATE" ]; then
+          else
             RACE_DATE="$INPUT_DATE"
             COLLECT_DAYS="${INPUT_DAYS:-1}"
-          else
-            RACE_DATE=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)
-            COLLECT_DAYS=1
           fi
 
           echo "race_date=$RACE_DATE" >> "$GITHUB_OUTPUT"
           echo "collect_days=$COLLECT_DAYS" >> "$GITHUB_OUTPUT"
 
-      - name: Collect race results
+      - name: Collect yesterday's results
+        if: github.event_name == 'schedule'
+        run: |
+          RACE_DATE=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)
+          RACE_DATE="$RACE_DATE" COLLECT_DAYS=1 python collect_data.py
+
+      - name: Collect historical results
         env:
           RACE_DATE: ${{ steps.dates.outputs.race_date }}
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
