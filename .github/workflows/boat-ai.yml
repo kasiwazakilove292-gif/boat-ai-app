@@ -19,8 +19,8 @@ on:
         default: "history"
         type: choice
         options:
-          - manual
           - history
+          - manual
 
   schedule:
     - cron: "0 0 * * *"
@@ -57,22 +57,44 @@ jobs:
           INPUT_DAYS: ${{ github.event.inputs.collect_days }}
           INPUT_MODE: ${{ github.event.inputs.mode }}
         run: |
-          if [ "$INPUT_MODE" = "history" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+          TODAY=$(TZ=Asia/Tokyo date +%F)
+          HISTORY_END=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)
+
+          if [ "$INPUT_MODE" = "manual" ]; then
+            RACE_DATE="$INPUT_DATE"
+            COLLECT_DAYS="${INPUT_DAYS:-1}"
+            HISTORY_ACTIVE=false
+          else
             if [ -f data/history_cursor.txt ]; then
               RACE_DATE=$(cat data/history_cursor.txt)
             else
               RACE_DATE="2024-10-15"
             fi
-            COLLECT_DAYS=30
-            NEXT_DATE=$(date -d "$RACE_DATE +30 days" +%F)
-            echo "$NEXT_DATE" > data/history_cursor.txt
-          else
-            RACE_DATE="$INPUT_DATE"
-            COLLECT_DAYS="${INPUT_DAYS:-1}"
+
+            HISTORY_ACTIVE=true
+
+            if [[ "$RACE_DATE" > "$HISTORY_END" ]]; then
+              HISTORY_ACTIVE=false
+              COLLECT_DAYS=0
+            else
+              NEXT_DATE=$(date -d "$RACE_DATE +30 days" +%F)
+
+              if [[ "$NEXT_DATE" > "$TODAY" ]]; then
+                NEXT_DATE="$TODAY"
+              fi
+
+              COLLECT_DAYS=$(( (
+                $(date -d "$NEXT_DATE" +%s) -
+                $(date -d "$RACE_DATE" +%s)
+              ) / 86400 ))
+
+              echo "$NEXT_DATE" > data/history_cursor.txt
+            fi
           fi
 
           echo "race_date=$RACE_DATE" >> "$GITHUB_OUTPUT"
           echo "collect_days=$COLLECT_DAYS" >> "$GITHUB_OUTPUT"
+          echo "history_active=$HISTORY_ACTIVE" >> "$GITHUB_OUTPUT"
 
       - name: Collect yesterday's results
         if: github.event_name == 'schedule'
@@ -81,6 +103,14 @@ jobs:
           RACE_DATE="$RACE_DATE" COLLECT_DAYS=1 python collect_data.py
 
       - name: Collect historical results
+        if: steps.dates.outputs.history_active == 'true'
+        env:
+          RACE_DATE: ${{ steps.dates.outputs.race_date }}
+          COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
+        run: python collect_data.py
+
+      - name: Collect manually selected results
+        if: github.event_name == 'workflow_dispatch' && steps.dates.outputs.history_active == 'false' && github.event.inputs.mode == 'manual'
         env:
           RACE_DATE: ${{ steps.dates.outputs.race_date }}
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
@@ -91,7 +121,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/omura_results.csv
+          if [ -f data/omura_results.csv ]; then
+            git add data/omura_results.csv
+          fi
+
           if [ -f data/history_cursor.txt ]; then
             git add data/history_cursor.txt
           fi
@@ -104,9 +137,9 @@ jobs:
           fi
 
       - name: Downloadable CSV backup
+        if: hashFiles('data/omura_results.csv') != ''
         uses: actions/upload-artifact@v4
         with:
           name: omura-results
           path: data/omura_results.csv
-          if-no-files-found: error
           retention-days: 30
