@@ -1,21 +1,36 @@
 from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
+from html.parser import HTMLParser
+from urllib.parse import urljoin
 
-url = "https://www1.mbrace.or.jp/od2/K/dindex.html"
+URL = "https://www1.mbrace.or.jp/od2/K/dindex.html"
 
-print("BOAT RACE公式サイトへの接続テスト")
+class LinkFinder(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.links = []
 
-try:
-    request = Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "a":
+            href = dict(attrs).get("href")
+            if href:
+                self.links.append(urljoin(URL, href))
 
-    with urlopen(request, timeout=20) as response:
-        print("HTTPステータス:", response.status)
-        print("取得データ量:", len(response.read()), "bytes")
-        print("接続成功！")
+print("公式サイトのリンクを確認中...")
 
-except (HTTPError, URLError, TimeoutError) as error:
-    print("接続失敗:", error)
-    raise
+request = Request(
+    URL,
+    headers={"User-Agent": "Mozilla/5.0"}
+)
+
+with urlopen(request, timeout=30) as response:
+    html = response.read()
+
+parser = LinkFinder()
+parser.feed(html.decode("cp932", errors="replace"))
+
+print("見つかったリンク数:", len(parser.links))
+
+for link in parser.links[:30]:
+    print(link)
+
+print("リンク確認完了")
