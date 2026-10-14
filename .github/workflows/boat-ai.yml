@@ -24,3 +24,11 @@ jobs:
 
       - name: Run data collector
         run: python collect_data.py
+
+      - name: Save CSV file
+        uses: actions/upload-artifact@v4
+        with:
+          name: omura-results
+          path: data/omura_results.csv
+          if-no-files-found: error
+          retention-days: 30
