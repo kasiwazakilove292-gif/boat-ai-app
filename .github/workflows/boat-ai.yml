@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       race_date:
-        description: "Race date (YYYY-MM-DD)"
+        description: "Start date (YYYY-MM-DD)"
         required: true
-        default: "2026-09-02"
+        default: "2026-09-01"
+        type: string
+      collect_days:
+        description: "Number of days (1-7)"
+        required: true
+        default: "7"
         type: string
 
   schedule:
@@ -14,6 +19,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: omura-data-collection
+  cancel-in-progress: false
 
 jobs:
   collect:
@@ -33,21 +42,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libarchive-tools
 
-      - name: Choose race date
-        id: date
+      - name: Choose race dates
+        id: dates
         env:
           INPUT_DATE: ${{ github.event.inputs.race_date }}
+          INPUT_DAYS: ${{ github.event.inputs.collect_days }}
         run: |
           if [ -n "$INPUT_DATE" ]; then
             RACE_DATE="$INPUT_DATE"
+            COLLECT_DAYS="${INPUT_DAYS:-1}"
           else
             RACE_DATE=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)
+            COLLECT_DAYS=1
           fi
+
           echo "race_date=$RACE_DATE" >> "$GITHUB_OUTPUT"
+          echo "collect_days=$COLLECT_DAYS" >> "$GITHUB_OUTPUT"
 
       - name: Collect race results
         env:
-          RACE_DATE: ${{ steps.date.outputs.race_date }}
+          RACE_DATE: ${{ steps.dates.outputs.race_date }}
+          COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
         run: python collect_data.py
 
       - name: Save CSV to repository
@@ -55,6 +70,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/omura_results.csv
+
           if git diff --cached --quiet; then
             echo "CSVに変更なし"
           else
