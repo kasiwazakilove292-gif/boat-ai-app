@@ -8,7 +8,7 @@ import os
 
 from datetime import datetime
 
-date_str = os.getenv("RACE_DATE",date_str, )
+date_str = os.getenv("RACE_DATE", "2026-09-01")
 
 race_date = datetime.strptime(date_str, "%Y-%m-%d")
 
