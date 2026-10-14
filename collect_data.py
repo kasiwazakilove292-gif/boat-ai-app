@@ -1,21 +1,7 @@
 from urllib.request import Request, urlopen
 from html.parser import HTMLParser
-from urllib.parse import urljoin
 
 URL = "https://www1.mbrace.or.jp/od2/K/dindex.html"
-
-class LinkFinder(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.links = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag.lower() == "a":
-            href = dict(attrs).get("href")
-            if href:
-                self.links.append(urljoin(URL, href))
-
-print("公式サイトのリンクを確認中...")
 
 request = Request(
     URL,
@@ -23,14 +9,22 @@ request = Request(
 )
 
 with urlopen(request, timeout=30) as response:
-    html = response.read()
+    data = response.read()
+    print("HTTPステータス:", response.status)
+    print("最終URL:", response.url)
+    print("データサイズ:", len(data), "bytes")
 
-parser = LinkFinder()
-parser.feed(html.decode("cp932", errors="replace"))
+html = data.decode("cp932", errors="replace")
 
-print("見つかったリンク数:", len(parser.links))
+class PageInspector(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() in ("a", "form", "input", "select", "option", "script"):
+            print("タグ:", tag, "属性:", attrs)
 
-for link in parser.links[:30]:
-    print(link)
+print("=== ページ構造の確認 ===")
+PageInspector().feed(html)
 
-print("リンク確認完了")
+print("=== HTML先頭500文字 ===")
+print(html[:500])
+
+print("調査完了")
