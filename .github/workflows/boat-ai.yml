@@ -21,6 +21,7 @@ on:
         options:
           - history
           - manual
+          - motor_test
 
   schedule:
     - cron: "0 0 * * *"
@@ -46,11 +47,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install extraction tool
+        if: github.event.inputs.mode != 'motor_test'
         run: |
           sudo apt-get update
           sudo apt-get install -y libarchive-tools
 
       - name: Choose race dates
+        if: github.event.inputs.mode != 'motor_test'
         id: dates
         env:
           INPUT_DATE: ${{ github.event.inputs.race_date }}
@@ -110,11 +113,15 @@ jobs:
         run: python collect_data.py
 
       - name: Collect manually selected results
-        if: github.event_name == 'workflow_dispatch' && steps.dates.outputs.history_active == 'false' && github.event.inputs.mode == 'manual'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'manual'
         env:
           RACE_DATE: ${{ steps.dates.outputs.race_date }}
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
         run: python collect_data.py
+
+      - name: Test motor data collection
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'motor_test'
+        run: python collect_motor.py
 
       - name: Save CSV and history progress
         run: |
@@ -129,10 +136,14 @@ jobs:
             git add data/history_cursor.txt
           fi
 
+          if [ -f data/omura_motor_history.csv ]; then
+            git add data/omura_motor_history.csv
+          fi
+
           if git diff --cached --quiet; then
             echo "変更なし"
           else
-            git commit -m "Update Omura results and history progress"
+            git commit -m "Update Omura collected data"
             git push
           fi
 
