@@ -6,8 +6,16 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  test:
+  collect:
     runs-on: ubuntu-latest
     steps:
-      - name: Check workflow
-        run: echo "Omura Boat AI workflow is ready"
+      - name: Get repository files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run data collector
+        run: python collect_data.py
