@@ -45,12 +45,7 @@ jobs:
           fi
           echo "race_date=$RACE_DATE" >> "$GITHUB_OUTPUT"
 
-      - name: Collect first test date
-        env:
-          RACE_DATE: "2026-09-01"
-        run: python collect_data.py
-
-      - name: Collect selected date
+      - name: Collect race results
         env:
           RACE_DATE: ${{ steps.date.outputs.race_date }}
         run: python collect_data.py
