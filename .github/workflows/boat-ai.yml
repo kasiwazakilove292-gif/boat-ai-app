@@ -1,0 +1,14 @@
+
+name: Omura Boat AI
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check workflow
+        run: echo "Omura Boat AI workflow is ready"
