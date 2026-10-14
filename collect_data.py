@@ -4,7 +4,17 @@ import shutil
 import re
 import csv
 
-archive = Path("k260901.lzh")
+import os
+
+from datetime import datetime
+
+date_str = os.getenv("RACE_DATE",date_str, )
+
+race_date = datetime.strptime(date_str, "%Y-%m-%d")
+
+file_code = race_date.strftime("%y%m%d")
+
+archive = Path(f"k{file_code}.lzh")
 output_dir = Path("data")
 output_dir.mkdir(exist_ok=True)
 
@@ -19,7 +29,7 @@ subprocess.run(
     check=True
 )
 
-txt_file = output_dir / "K260901.TXT"
+txt_file = output_dir / f"K{file_code}.TXT"
 text = txt_file.read_bytes().decode("cp932")
 
 # 会場ごとのデータを分ける
