@@ -2,12 +2,20 @@ name: Omura Boat AI
 
 on:
   workflow_dispatch:
+    inputs:
+      race_date:
+        description: "Race date (YYYY-MM-DD)"
+        required: true
+        default: "2026-09-01"
+        type: string
   schedule:
     - cron: "0 0 * * *"
 
 jobs:
   collect:
     runs-on: ubuntu-latest
+    env:
+      RACE_DATE: ${{ github.event.inputs.race_date || '2026-09-01' }}
     steps:
       - name: Get repository files
         uses: actions/checkout@v4
