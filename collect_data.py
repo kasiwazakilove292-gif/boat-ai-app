@@ -1,10 +1,21 @@
-from pathlib import Path
-from datetime import datetime
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
-def main():
-    print("Omura Boat AI - Data Collector")
-    print("実行日時:", datetime.now().isoformat())
-    print("データ収集プログラムの準備OK")
+url = "https://www1.mbrace.or.jp/od2/K/dindex.html"
 
-if __name__ == "__main__":
-    main()
+print("BOAT RACE公式サイトへの接続テスト")
+
+try:
+    request = Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+
+    with urlopen(request, timeout=20) as response:
+        print("HTTPステータス:", response.status)
+        print("取得データ量:", len(response.read()), "bytes")
+        print("接続成功！")
+
+except (HTTPError, URLError, TimeoutError) as error:
+    print("接続失敗:", error)
+    raise
