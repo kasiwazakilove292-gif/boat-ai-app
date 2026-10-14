@@ -16,8 +16,9 @@ start_date = datetime.strptime(
 )
 days = int(os.getenv("COLLECT_DAYS", "1"))
 
-if not 1 <= days <= 7:
-    raise ValueError("COLLECT_DAYSは1〜7にしてください")
+# 最大30日分まで収集可能
+if not 1 <= days <= 30:
+    raise ValueError("COLLECT_DAYSは1〜30にしてください")
 
 output_dir = Path("data")
 output_dir.mkdir(exist_ok=True)
@@ -41,6 +42,7 @@ if csv_file.exists():
                 row["trifecta"],
                 int(row["payout_yen"])
             ]
+
 
 def collect_one(race_date):
     date_str = race_date.strftime("%Y-%m-%d")
@@ -124,6 +126,7 @@ def collect_one(race_date):
 
     print(f"抽出成功: {len(results)}レース")
     return len(results)
+
 
 # 指定した日数を順番に収集
 total_collected = 0
