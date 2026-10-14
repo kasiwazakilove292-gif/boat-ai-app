@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import urllib.request
 
+# 取得する日付
 date_str = os.getenv("RACE_DATE", "2026-09-01")
 race_date = datetime.strptime(date_str, "%Y-%m-%d")
 file_code = race_date.strftime("%y%m%d")
@@ -15,21 +16,23 @@ archive = Path(f"k{file_code}.lzh")
 output_dir = Path("data")
 output_dir.mkdir(exist_ok=True)
 
-# ファイルがなければ公式サイトから取得
+# LZHファイルを自動ダウンロード
 if not archive.exists():
     url = (
         f"https://www1.mbrace.or.jp/od2/K/"
         f"{race_date.strftime('%Y%m')}/"
         f"k{file_code}.lzh"
     )
+
     print("ダウンロード開始:", url)
     urllib.request.urlretrieve(url, archive)
     print("ダウンロード完了:", archive)
 
-# LZHファイルを解凍
+# 解凍ツールを確認
 if not shutil.which("bsdtar"):
     raise RuntimeError("bsdtarが見つかりません")
 
+# LZHファイルを解凍
 subprocess.run(
     ["bsdtar", "-xf", str(archive), "-C", str(output_dir)],
     check=True
@@ -38,9 +41,10 @@ subprocess.run(
 txt_file = output_dir / f"K{file_code}.TXT"
 text = txt_file.read_bytes().decode("cp932")
 
-# 大村のデータ部分を探す
+# 会場ごとのデータを分ける
+# 以前成功したコードの正規表現を使用
 headers = list(re.finditer(
-    r"^.*\d{4}/\s*\d{1,2}/\s*\d{1,2}.*ボートレース",
+    r"^.*\d{4}/\s*\d{1,2}/\s*\d{1,2}.*ボートレース.*$",
     text,
     re.MULTILINE
 ))
@@ -53,6 +57,7 @@ for i, match in enumerate(headers):
         if i + 1 < len(headers)
         else len(text)
     )
+
     section = text[match.start():end]
     header = match.group().replace("\u3000", "")
 
@@ -85,7 +90,7 @@ if len(results) != 12:
         f"抽出件数が想定と違います: {len(results)}件"
     )
 
-# 以前のCSVを読み込む
+# 過去に保存したCSVを読み込む
 csv_file = output_dir / "omura_results.csv"
 all_results = {}
 
@@ -97,6 +102,7 @@ if csv_file.exists():
 
         for row in reader:
             key = (row["date"], int(row["race"]))
+
             all_results[key] = [
                 row["date"],
                 int(row["race"]),
@@ -104,17 +110,22 @@ if csv_file.exists():
                 int(row["payout_yen"])
             ]
 
-# 同じ日付・レース番号は上書きして重複防止
+# 同じ日付・レース番号は重複させない
 for row in results:
-    all_results[(row[0], row[1])] = row
+    key = (row[0], row[1])
+    all_results[key] = row
 
-# 日付とレース番号の順にCSV保存
+# 日付順にCSV保存
 with csv_file.open(
     "w", newline="", encoding="utf-8-sig"
 ) as f:
     writer = csv.writer(f)
+
     writer.writerow([
-        "date", "race", "trifecta", "payout_yen"
+        "date",
+        "race",
+        "trifecta",
+        "payout_yen"
     ])
 
     for key in sorted(all_results):
@@ -124,4 +135,8 @@ print("大村の3連単データ抽出成功！")
 print("今回の抽出レース数:", len(results))
 print("CSV合計レース数:", len(all_results))
 print("CSV保存先:", csv_file)
+
+for row in results:
+    print(row)
+
 print("CSV変換完了")
