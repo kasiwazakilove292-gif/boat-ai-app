@@ -19,7 +19,17 @@ output_dir = Path("data")
 output_dir.mkdir(exist_ok=True)
 
 if not archive.exists():
-    raise FileNotFoundError("LZHファイルが見つかりません")
+    import urllib.request
+
+    url = (
+        f"https://www1.mbrace.or.jp/od2/K/"
+        f"{race_date.strftime('%Y%m')}/"
+        f"k{file_code}.lzh"
+    )
+
+    print("ダウンロード開始:", url)
+    urllib.request.urlretrieve(url, archive)
+    print("ダウンロード完了:", archive)
 
 if not shutil.which("bsdtar"):
     raise RuntimeError("bsdtarが見つかりません")
