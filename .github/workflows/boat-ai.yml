@@ -13,6 +13,14 @@ on:
         required: true
         default: "7"
         type: string
+      mode:
+        description: "Collection mode"
+        required: true
+        default: "manual"
+        type: choice
+        options:
+          - manual
+          - history
 
   schedule:
     - cron: "0 0 * * *"
@@ -47,8 +55,18 @@ jobs:
         env:
           INPUT_DATE: ${{ github.event.inputs.race_date }}
           INPUT_DAYS: ${{ github.event.inputs.collect_days }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
         run: |
-          if [ -n "$INPUT_DATE" ]; then
+          if [ "$INPUT_MODE" = "history" ]; then
+            if [ -f data/history_cursor.txt ]; then
+              RACE_DATE=$(cat data/history_cursor.txt)
+            else
+              RACE_DATE="2024-10-15"
+            fi
+            COLLECT_DAYS=7
+            NEXT_DATE=$(date -d "$RACE_DATE +7 days" +%F)
+            echo "$NEXT_DATE" > data/history_cursor.txt
+          elif [ -n "$INPUT_DATE" ]; then
             RACE_DATE="$INPUT_DATE"
             COLLECT_DAYS="${INPUT_DAYS:-1}"
           else
@@ -65,16 +83,20 @@ jobs:
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
         run: python collect_data.py
 
-      - name: Save CSV to repository
+      - name: Save CSV and history progress
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add data/omura_results.csv
+          if [ -f data/history_cursor.txt ]; then
+            git add data/history_cursor.txt
+          fi
 
           if git diff --cached --quiet; then
-            echo "CSVに変更なし"
+            echo "変更なし"
           else
-            git commit -m "Update Omura race results"
+            git commit -m "Update Omura results and history progress"
             git push
           fi
 
