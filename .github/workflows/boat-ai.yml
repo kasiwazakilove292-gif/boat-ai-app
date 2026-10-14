@@ -9,7 +9,7 @@ on:
         default: "2026-09-01"
         type: string
       collect_days:
-        description: "Number of days (1-7)"
+        description: "Number of days (1-30)"
         required: true
         default: "7"
         type: string
@@ -63,8 +63,8 @@ jobs:
             else
               RACE_DATE="2024-10-15"
             fi
-            COLLECT_DAYS=7
-            NEXT_DATE=$(date -d "$RACE_DATE +7 days" +%F)
+            COLLECT_DAYS=30
+            NEXT_DATE=$(date -d "$RACE_DATE +30 days" +%F)
             echo "$NEXT_DATE" > data/history_cursor.txt
           else
             RACE_DATE="$INPUT_DATE"
