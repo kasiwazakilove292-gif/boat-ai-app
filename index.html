@@ -28,20 +28,63 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;p
 .hidden{display:none!important}.record{border-top:1px solid #e4eaf0;padding:10px 0}.record:first-child{border-top:0}
 footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 @media(min-width:600px){main{padding:20px}.grid{grid-template-columns:1fr 1fr 1fr}}
+.racer{border:1px solid #e0e7ed;border-radius:13px;padding:12px;margin-top:10px}
+.lane{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #aebcc7;border-radius:8px;font-weight:800;margin-right:8px;flex-shrink:0}
+.lane1{background:#fff;color:#172b3a}.lane2{background:#222;color:#fff}.lane3{background:#df333e;color:#fff}.lane4{background:#1769aa;color:#fff}.lane5{background:#ffdf50;color:#172b3a}.lane6{background:#07865b;color:#fff}
+.racer-name{display:flex;align-items:center;min-width:0}.racer-name b{font-size:15px}
+.race-values{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.race-values small{display:block;color:#647788;font-size:10px}.race-values strong{display:block;font-size:16px;margin-top:4px}
+.racer details{margin-top:12px;border-top:1px solid #edf1f4;padding-top:9px;font-size:12px}.racer summary{color:#1769aa;cursor:pointer}
+.racer dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}.racer dt{color:#647788;font-size:11px}.racer dd{margin:3px 0 0;overflow-wrap:anywhere}
+.weather{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.weather span{background:#f1f5f8;padding:7px 9px;border-radius:9px;font-size:12px}
+.data-state{padding:10px;border-radius:10px;background:#e9f4ef;color:#13613d;font-size:12px;line-height:1.6;margin:10px 0}.data-state.caution{background:#fff5df;color:#79520c}
+#refreshData:disabled{opacity:.55}#dataStatus{margin-bottom:0}#race .grid{grid-template-columns:1fr 1fr}
 </style>
 </head>
 <body>
-<header><h1>🚤 BOAT AI LAB</h1><p>買い目記録・結果管理・回収率チェック</p></header>
+<header>
+<h1>🚤 BOAT AI LAB</h1>
+<p>大村の出走表・展示情報・ペーパーテスト</p>
+</header>
+
 <main>
 <div class="nav">
-<button class="active" data-tab="predict">買い目記録</button>
+<button class="active" data-tab="race">出走表</button>
+<button data-tab="predict">買い目記録</button>
 <button data-tab="results">結果入力</button>
 <button data-tab="stats">成績</button>
 </div>
-<section id="predict">
+
+<section id="race">
+<div class="card">
+<div class="row">
+<h2 style="margin:0">大村の出走表</h2>
+<span class="pill">公式データ</span>
+</div>
+<div class="grid" style="margin-top:14px">
+<div class="field">
+<label for="dataDate">レース日</label>
+<input id="dataDate" type="date">
+</div>
+<div class="field">
+<label for="dataRace">レース番号</label>
+<select id="dataRace"></select>
+</div>
+</div>
+<button id="refreshData" class="btn secondary">データを更新</button>
+<p id="dataStatus" class="muted" role="status" aria-live="polite">読み込み中…</p>
+</div>
+<div class="card">
+<h2 id="raceHeading">レース情報</h2>
+<div id="raceInfo"></div>
+<div id="racers"></div>
+</div>
+<p class="muted">展示情報は公開後に表示されます。収集は日中15分間隔の予定です。更新ボタンで保存済みの最新情報を読み込めます。締切や開催状況は公式サイトでも確認してください。</p>
+</section>
+
+<section id="predict" class="hidden">
 <div class="card">
 <h2>ペーパーテスト用の記録</h2>
-<div class="warn">この初期版は買い目の記録・集計用です。自動予想や公式データ取得、自動投票はありません。実際の購入前に、過去データで十分に検証してください。</div>
+<div class="warn">出走表・展示情報を確認しながらペーパーテストを記録できます。自動予想は準備中です。推定確率は自分で入力してください。</div>
 <form id="pickForm" style="margin-top:14px">
 <div class="grid">
 <div class="field"><label>レース日</label><input id="raceDate" type="date" required></div>
@@ -50,7 +93,7 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <div class="field"><label>券種</label><select id="betType"><option>3連単</option><option>2連単</option><option>3連複</option></select></div>
 <div class="field"><label>買い目</label><input id="combination" placeholder="例：1-2-3" required></div>
 <div class="field"><label>オッズ（倍）</label><input id="odds" type="number" min="1" max="10000" step=".1" value="10" required></div>
-<div class="field"><label>推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".1" value="10" required></div>
+<div class="field"><label>自分の推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".1" value="10" required></div>
 <div class="field"><label>購入候補額（円）</label><input id="stake" type="number" min="0" max="5000" step="100" value="100" required></div>
 <div class="field wide"><label>メモ（任意）</label><input id="notes" placeholder="展示・風・予想理由など"></div>
 </div>
@@ -63,45 +106,459 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 </form>
 </div>
 </section>
+
 <section id="results" class="hidden">
-<div class="card"><h2>未確定の結果を入力</h2><div id="pending"></div></div>
+<div class="card">
+<h2>未確定の結果を入力</h2>
+<div id="pending"></div>
+</div>
 </section>
+
 <section id="stats" class="hidden">
-<div class="card"><h2>成績サマリー</h2><div class="metrics">
+<div class="card">
+<h2>成績サマリー</h2>
+<div class="metrics">
 <div class="metric"><small>回収率</small><strong id="roi">—</strong></div>
 <div class="metric"><small>収支</small><strong id="net">—</strong></div>
 <div class="metric"><small>確定記録</small><strong id="count">0件</strong></div>
 <div class="metric"><small>的中率（記録単位）</small><strong id="hit">—</strong></div>
-</div><p class="muted">返還は投資額から除外して計算します。払戻は購入額に対する総払戻額を入力してください。</p></div>
-<div class="card"><div class="row"><h2 style="margin:0">記録一覧</h2><button id="export" class="btn secondary" style="width:auto;margin:0">CSV出力</button></div><div id="history" style="overflow:auto;margin-top:10px"></div><button id="clear" class="btn secondary">全記録を削除</button></div>
+</div>
+<p class="muted">返還は投資額・払戻額の両方から除外して計算します。払戻は購入額に対する総払戻額を入力してください。</p>
+</div>
+<div class="card">
+<div class="row">
+<h2 style="margin:0">記録一覧</h2>
+<button id="export" class="btn secondary" style="width:auto;margin:0">CSV出力</button>
+</div>
+<div id="history" style="overflow:auto;margin-top:10px"></div>
+<button id="clear" class="btn secondary">全記録を削除</button>
+</div>
 </section>
-<footer>データはこの端末のブラウザ内に保存されます。ブラウザデータを消去すると記録も消えるため、定期的にCSV保存してください。利益は保証されません。</footer>
+
+<footer>買い目の記録はこの端末のブラウザ内に保存されます。ブラウザデータを消去すると記録も消えるため、定期的にCSV保存してください。利益は保証されません。</footer>
 </main>
+
 <script>
 const $=id=>document.getElementById(id);
 const STORE="boat_ai_pwa_v1";
+const E=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let records=JSON.parse(localStorage.getItem(STORE)||"[]");
-for(let i=1;i<=12;i++) $("raceNo").add(new Option(i+"R",i));
+
+for(let i=1;i<=12;i++)$("raceNo").add(new Option(i+"R",i));
 $("raceDate").value=new Date().toLocaleDateString("sv-SE");
-function save(){localStorage.setItem(STORE,JSON.stringify(records));render();}
-function yen(v){return "¥"+Math.round(v).toLocaleString("ja-JP")}
-function evUpdate(){const p=Number($("prob").value||0)/100,o=Number($("odds").value||0);const ev=p*o*100;$("ev").textContent=ev.toFixed(1)+"%";$("profit").textContent=yen(ev-100);$("ev").style.color=ev>=100?"#087443":"#9b3b28";}
-$("prob").addEventListener("input",evUpdate);$("odds").addEventListener("input",evUpdate);evUpdate();
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x===b));["predict","results","stats"].forEach(t=>$(t).classList.toggle("hidden",t!==b.dataset.tab));render();});
-$("pickForm").onsubmit=e=>{e.preventDefault();const stake=Number($("stake").value);if(stake>5000){alert("1レース上限は5,000円です");return;}records.unshift({id:Date.now(),created:new Date().toISOString(),date:$("raceDate").value,venue:$("venue").value,raceNo:Number($("raceNo").value),betType:$("betType").value,combination:$("combination").value.trim(),odds:Number($("odds").value),probability:Number($("prob").value)/100,stake,result:"未確定",payout:0,notes:$("notes").value});save();$("combination").value="";$("notes").value="";alert("記録しました。実際の舟券購入は行っていません。");};
+
+function save(){
+ localStorage.setItem(STORE,JSON.stringify(records));
+ render();
+}
+function yen(v){
+ return "¥"+Math.round(v).toLocaleString("ja-JP");
+}
+function evUpdate(){
+ const p=Number($("prob").value||0)/100;
+ const o=Number($("odds").value||0);
+ const ev=p*o*100;
+ $("ev").textContent=ev.toFixed(1)+"%";
+ $("profit").textContent=yen(ev-100);
+ $("ev").style.color=ev>=100?"#087443":"#9b3b28";
+}
+$("prob").addEventListener("input",evUpdate);
+$("odds").addEventListener("input",evUpdate);
+evUpdate();
+
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".nav button").forEach(x=>{
+  x.classList.toggle("active",x===b);
+ });
+ ["race","predict","results","stats"].forEach(t=>{
+  $(t).classList.toggle("hidden",t!==b.dataset.tab);
+ });
+ render();
+});
+
+$("pickForm").onsubmit=e=>{
+ e.preventDefault();
+ const stake=Number($("stake").value);
+ const raceNo=Number($("raceNo").value);
+ const date=$("raceDate").value;
+ const venue=$("venue").value;
+ const combination=$("combination").value.trim()
+  .replace(/[－ー→]/g,"-").replace(/\s/g,"");
+ const boats=combination.split("-");
+ const required=$("betType").value==="2連単"?2:3;
+
+ if(
+  boats.length!==required||
+  boats.some(x=>!/^([1-6])$/.test(x))||
+  new Set(boats).size!==required
+ ){
+  alert("買い目は1〜6の重複しない艇番で入力してください。例：1-2-3");
+  return;
+ }
+
+ const total=records.filter(r=>
+  r.date===date&&r.venue===venue&&Number(r.raceNo)===raceNo
+ ).reduce((n,r)=>n+Number(r.stake),0);
+
+ if(
+  !Number.isFinite(stake)||stake<0||
+  stake%100!==0||total+stake>5000
+ ){
+  alert("1レースの記録合計は5,000円までです。現在の合計："+yen(total));
+  return;
+ }
+
+ records.unshift({
+  id:Date.now(),
+  created:new Date().toISOString(),
+  date,venue,raceNo,
+  betType:$("betType").value,
+  combination,
+  odds:Number($("odds").value),
+  probability:Number($("prob").value)/100,
+  stake,
+  result:"未確定",
+  payout:0,
+  notes:$("notes").value
+ });
+ save();
+ $("combination").value="";
+ $("notes").value="";
+ alert("ペーパーテストに記録しました。");
+};
+
 function render(){
  const pending=records.filter(r=>r.result==="未確定");
- $("pending").innerHTML=pending.length?pending.map(r=>`<div class="record"><div class="row"><b>${r.date} ${r.venue} ${r.raceNo}R</b><span class="pill">${r.betType}</span></div><p style="margin:6px 0">${r.combination}｜${yen(r.stake)}｜オッズ ${r.odds}</p><div class="grid"><div class="field"><label>結果</label><select id="res${r.id}"><option>不的中</option><option>的中</option><option>返還</option></select></div><div class="field"><label>総払戻額（円）</label><input id="pay${r.id}" type="number" min="0" step="100" value="${Math.round(r.stake*r.odds)}"></div><div class="wide"><button class="btn" onclick="settle(${r.id})">結果を保存</button></div></div></div>`).join(""):"<p class='muted'>未確定の記録はありません。</p>";
+ $("pending").innerHTML=pending.length?pending.map(r=>`
+ <div class="record">
+ <div class="row">
+ <b>${E(r.date)} ${E(r.venue)} ${r.raceNo}R</b>
+ <span class="pill">${E(r.betType)}</span>
+ </div>
+ <p style="margin:6px 0">${E(r.combination)}｜${yen(r.stake)}｜オッズ ${E(r.odds)}</p>
+ <div class="grid">
+ <div class="field">
+ <label>結果</label>
+ <select id="res${r.id}">
+ <option>不的中</option><option>的中</option><option>返還</option>
+ </select>
+ </div>
+ <div class="field">
+ <label>総払戻額（円）</label>
+ <input id="pay${r.id}" type="number" min="0" step="100" value="${Math.round(r.stake*r.odds)}">
+ </div>
+ <div class="wide">
+ <button class="btn" onclick="settle(${r.id})">結果を保存</button>
+ </div>
+ </div>
+ </div>`).join(""):"<p class='muted'>未確定の記録はありません。</p>";
+
  const settled=records.filter(r=>["的中","不的中","返還"].includes(r.result));
- const invest=settled.filter(r=>r.result!=="返還").reduce((s,r)=>s+r.stake,0), payout=settled.reduce((s,r)=>s+r.payout,0), net=payout-invest;
- const decided=settled.filter(r=>r.result!=="返還"),hits=decided.filter(r=>r.result==="的中").length;
- $("roi").textContent=invest?(payout/invest*100).toFixed(1)+"%":"—";$("net").textContent=invest||payout?yen(net):"—";$("net").style.color=net>=0?"#087443":"#9b3b28";$("count").textContent=decided.length+"件";$("hit").textContent=decided.length?(hits/decided.length*100).toFixed(1)+"%":"—";
- $("history").innerHTML=records.length?`<table><thead><tr><th>日付・場</th><th>券種・買い目</th><th>投資</th><th>結果</th><th>払戻</th></tr></thead><tbody>${records.map(r=>`<tr><td>${r.date}<br>${r.venue} ${r.raceNo}R</td><td>${r.betType}<br>${r.combination}<br><small>オッズ ${r.odds} / 確率 ${(r.probability*100).toFixed(1)}%</small></td><td>${yen(r.stake)}</td><td>${r.result}</td><td>${yen(r.payout)}</td></tr>`).join("")}</tbody></table>`:"<p class='muted'>記録はまだありません。</p>";
+ const decided=settled.filter(r=>r.result!=="返還");
+ const invest=decided.reduce((s,r)=>s+r.stake,0);
+ const payout=decided.reduce((s,r)=>s+r.payout,0);
+ const net=payout-invest;
+ const hits=decided.filter(r=>r.result==="的中").length;
+
+ $("roi").textContent=invest?(payout/invest*100).toFixed(1)+"%":"—";
+ $("net").textContent=settled.length?yen(net):"—";
+ $("net").style.color=net>=0?"#087443":"#9b3b28";
+ $("count").textContent=decided.length+"件";
+ $("hit").textContent=decided.length?(hits/decided.length*100).toFixed(1)+"%":"—";
+
+ $("history").innerHTML=records.length?`
+ <table><thead><tr>
+ <th>日付・場</th><th>券種・買い目</th><th>投資</th><th>結果</th><th>払戻</th>
+ </tr></thead><tbody>
+ ${records.map(r=>`<tr>
+ <td>${E(r.date)}<br>${E(r.venue)} ${r.raceNo}R</td>
+ <td>${E(r.betType)}<br>${E(r.combination)}<br>
+ <small>オッズ ${E(r.odds)} / 確率 ${(r.probability*100).toFixed(1)}%</small></td>
+ <td>${yen(r.stake)}</td><td>${E(r.result)}</td><td>${yen(r.payout)}</td>
+ </tr>`).join("")}
+ </tbody></table>`:"<p class='muted'>記録はまだありません。</p>";
 }
-window.settle=id=>{const r=records.find(x=>x.id===id);if(!r)return;const result=$("res"+id).value;let payout=Number($("pay"+id).value||0);if(result==="不的中")payout=0;if(result==="返還")payout=r.stake;if(result==="的中"&&payout<0){alert("払戻額を確認してください");return;}r.result=result;r.payout=payout;save();};
-$("export").onclick=()=>{const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes"];const esc=x=>'"'+String(x??"").replaceAll('"','""')+'"';const csv=[cols.join(","),...records.map(r=>cols.map(c=>esc(r[c])).join(","))].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="boat_ai_records.csv";a.click();URL.revokeObjectURL(a.href);};
-$("clear").onclick=()=>{if(confirm("全記録を削除します。CSV保存しましたか？")){records=[];save();}};
+
+window.settle=id=>{
+ const r=records.find(x=>x.id===id);
+ if(!r)return;
+ const result=$("res"+id).value;
+ let payout=Number($("pay"+id).value||0);
+ if(result==="不的中")payout=0;
+ if(result==="返還")payout=r.stake;
+ if(result==="的中"&&payout<0){
+  alert("払戻額を確認してください");
+  return;
+ }
+ r.result=result;
+ r.payout=payout;
+ save();
+};
+
+$("export").onclick=()=>{
+ const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes"];
+ const esc=x=>'"'+String(x??"").replaceAll('"','""')+'"';
+ const csv=[
+  cols.join(","),
+  ...records.map(r=>cols.map(c=>esc(r[c])).join(","))
+ ].join("\r\n");
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));
+ a.download="boat_ai_records.csv";
+ a.click();
+ URL.revokeObjectURL(a.href);
+};
+
+$("clear").onclick=()=>{
+ if(confirm("全記録を削除します。CSV保存しましたか？")){
+  records=[];
+  save();
+ }
+};
+
 render();
-if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
+ navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+
+// 出走表と直前情報
+const DATA_ROOT="https://raw.githubusercontent.com/kasiwazakilove292-gif/boat-ai-app/main/data/";
+const DATA_CACHE="boat_ai_race_data_v1";
+let entries=[],beforeInfo=[],dataError="",loadingData=false;
+
+const jstDate=()=>new Intl.DateTimeFormat("sv-SE",{
+ timeZone:"Asia/Tokyo",
+ year:"numeric",month:"2-digit",day:"2-digit"
+}).format(new Date());
+
+const timeText=value=>
+ value&&Number.isFinite(Date.parse(value))
+ ?new Intl.DateTimeFormat("ja-JP",{
+  timeZone:"Asia/Tokyo",
+  month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"
+ }).format(new Date(value))
+ :"—";
+
+const show=value=>value===""||value==null?"—":E(value);
+
+function csvRows(text){
+ text=text.replace(/^\uFEFF/,"");
+ const rows=[];
+ let row=[],cell="",quoted=false;
+
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(c==='"'){
+   if(quoted&&text[i+1]==='"'){
+    cell+='"';
+    i++;
+   }else{
+    quoted=!quoted;
+   }
+  }else if(c===","&&!quoted){
+   row.push(cell);
+   cell="";
+  }else if((c==="\n"||c==="\r")&&!quoted){
+   if(c==="\r"&&text[i+1]==="\n")i++;
+   row.push(cell);
+   if(row.some(x=>x!==""))rows.push(row);
+   row=[];
+   cell="";
+  }else{
+   cell+=c;
+  }
+ }
+
+ if(quoted)throw new Error("CSVの引用符が閉じていません");
+ if(cell!==""||row.length){
+  row.push(cell);
+  rows.push(row);
+ }
+ const headers=rows.shift()||[];
+ if(!["date","venue","race_no","boat_no"].every(k=>headers.includes(k))){
+  throw new Error("CSV形式を確認できません");
+ }
+ return rows.map(values=>{
+  if(values.length!==headers.length){
+   throw new Error("CSVの列数が異なります");
+  }
+  return Object.fromEntries(headers.map((h,i)=>[h,values[i]]));
+ });
+}
+
+async function fetchData(filename){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),20000);
+ try{
+  const response=await fetch(DATA_ROOT+filename+"?v="+Date.now(),{
+   cache:"no-store",
+   signal:controller.signal
+  });
+  if(!response.ok)throw new Error("HTTP "+response.status);
+  return csvRows(await response.text());
+ }finally{
+  clearTimeout(timer);
+ }
+}
+
+function updateDataAge(){
+ const node=$("dataAge");
+ if(!node)return;
+ const timestamp=node.dataset.timestamp;
+ const age=Math.max(0,Math.floor((Date.now()-Date.parse(timestamp))/60000));
+ node.textContent=Number.isFinite(age)?"取得から"+age+"分経過":"取得時刻不明";
+ if(age>20)node.textContent+="・古い可能性があります";
+}
+
+function renderRace(){
+ const day=$("dataDate").value;
+ const race=$("dataRace").value;
+ $("raceHeading").textContent=day+" 大村 "+race+"R";
+
+ const matches=rows=>rows.filter(r=>
+  r.date===day&&r.venue==="24"&&r.race_no===race
+ );
+ const es=matches(entries);
+ const bs=matches(beforeInfo);
+
+ if(!es.length&&!bs.length){
+  $("raceInfo").innerHTML="";
+  $("racers").innerHTML='<p class="muted">この日・レースのデータはまだ保存されていません。非開催や公開前の場合もあります。</p>';
+  return;
+ }
+
+ const infoByBoat=new Map(bs.map(r=>[r.boat_no,r]));
+ const entriesByBoat=new Map(es.map(r=>[r.boat_no,r]));
+ const allBoats=[...new Set([
+  ...entriesByBoat.keys(),...infoByBoat.keys()
+ ])].sort((a,b)=>Number(a)-Number(b));
+
+ const newest=(bs.length?bs:es)
+  .map(r=>r.collected_at).filter(Boolean).sort().at(-1);
+ const weather=bs.find(r=>r.wind_speed!==""||r.wave_height!=="");
+ const deadline=bs.find(r=>r.deadline_at)?.deadline_at;
+ const ended=deadline&&Date.now()>=Date.parse(deadline);
+
+ const state=deadline
+  ?(ended
+   ?"締切予定時刻を過ぎています。掲載値は保存済みの情報です。"
+   :"締切予定："+timeText(deadline))
+  :"締切時刻は未取得です。";
+
+ $("raceInfo").innerHTML=
+ `<div class="data-state ${ended||!deadline?"caution":""}">${E(state)}</div>`+
+ (weather?`
+ <div class="weather">
+ <span>${show(weather.weather)}</span>
+ <span>風速 ${show(weather.wind_speed)} m</span>
+ <span>波高 ${show(weather.wave_height)} cm</span>
+ <span>気温 ${show(weather.air_temperature)} ℃</span>
+ <span>水温 ${show(weather.water_temperature)} ℃</span>
+ </div>
+ <p class="muted">水面気象：${show(weather.weather_as_of)} ／ 取得 ${timeText(weather.collected_at)}</p>`:"")+
+ `<p class="muted">
+ ${bs.length?"展示・気象の取得":"出走表の取得"}：${timeText(newest)}
+ <span id="dataAge" data-timestamp="${E(newest)}"></span>
+ </p>`+
+ `<a class="muted" href="https://www.boatrace.jp/owpc/pc/race/beforeinfo?jcd=24&amp;hd=${day.replaceAll("-","")}&amp;rno=${Number(race)}" target="_blank" rel="noopener">公式の直前情報を開く ↗</a>`;
+
+ $("racers").innerHTML=allBoats.map(boat=>{
+  const e=entriesByBoat.get(boat)||{};
+  let b=infoByBoat.get(boat)||{};
+  const name=e.racer_name||b.racer_name||"選手情報未取得";
+  const mismatch=e.racer_name&&b.racer_name&&e.racer_name!==b.racer_name;
+  if(mismatch)b={};
+  const exhibition=b.exhibition_time?E(b.exhibition_time):"展示待ち";
+
+  return `
+  <article class="racer">
+  <div class="row">
+  <div class="racer-name">
+  <span class="lane lane${Number(boat)}">${Number(boat)}</span>
+  <b>${E(name)}</b>
+  </div>
+  <span class="pill">${show(e.racer_class)}</span>
+  </div>
+  ${mismatch?'<p class="warn">選手情報に変更があります。再取得まで展示情報の表示を保留します。</p>':""}
+  <div class="race-values">
+  <div><small>全国勝率</small><strong>${show(e.national_win_rate)}</strong></div>
+  <div><small>当地勝率</small><strong>${show(e.local_win_rate)}</strong></div>
+  <div><small>モーター2連率</small><strong>${show(e.motor_2rate)}${e.motor_2rate?"%":""}</strong></div>
+  <div><small>展示タイム</small><strong style="font-size:${b.exhibition_time?16:12}px">${exhibition}</strong></div>
+  </div>
+  <details>
+  <summary>ST・モーター・部品交換を見る</summary>
+  <dl>
+  <div><dt>平均ST</dt><dd>${show(e.average_st)}</dd></div>
+  <div><dt>スタート展示ST</dt><dd>${show(b.exhibition_st)}</dd></div>
+  <div><dt>スタート展示の進入コース</dt><dd>${show(b.exhibition_course)}</dd></div>
+  <div><dt>モーター番号</dt><dd>${show(e.motor_no)}</dd></div>
+  <div><dt>チルト</dt><dd>${show(b.tilt)}</dd></div>
+  <div><dt>体重</dt><dd>${show(b.weight_kg)} kg</dd></div>
+  <div><dt>プロペラ変更</dt><dd>${b.propeller?E(b.propeller):"記載なし"}</dd></div>
+  <div><dt>部品交換</dt><dd>${b.parts?E(b.parts):"記載なし"}</dd></div>
+  <div><dt>出走表の取得</dt><dd>${timeText(e.collected_at)}</dd></div>
+  <div><dt>展示情報の取得</dt><dd>${timeText(b.collected_at)}</dd></div>
+  </dl>
+  </details>
+  </article>`;
+ }).join("");
+
+ updateDataAge();
+}
+
+async function loadRaceData(){
+ if(loadingData)return;
+ loadingData=true;
+ $("refreshData").disabled=true;
+ $("dataStatus").textContent="データを読み込んでいます…";
+
+ const result=await Promise.allSettled([
+  fetchData("omura_entries.csv"),
+  fetchData("omura_beforeinfo.csv")
+ ]);
+
+ if(result[0].status==="fulfilled")entries=result[0].value;
+ if(result[1].status==="fulfilled")beforeInfo=result[1].value;
+
+ dataError=result.map((r,i)=>
+  r.status==="rejected"?(i===0?"出走表":"直前情報"):""
+ ).filter(Boolean).join("・");
+
+ if(result.some(r=>r.status==="fulfilled")){
+  try{
+   localStorage.setItem(DATA_CACHE,JSON.stringify({entries,beforeInfo}));
+  }catch{}
+ }
+
+ $("dataStatus").textContent=dataError
+  ?dataError+"の更新に失敗しました。取得済みデータがあれば表示します。取得時刻を確認してください。"
+  :"保存済みデータを読み込みました。展示前の空欄は正常です。";
+
+ loadingData=false;
+ $("refreshData").disabled=false;
+ renderRace();
+}
+
+for(let i=1;i<=12;i++){
+ $("dataRace").add(new Option(i+"R",i));
+}
+$("dataDate").value=jstDate();
+$("dataDate").onchange=renderRace;
+$("dataRace").onchange=renderRace;
+$("refreshData").onclick=loadRaceData;
+
+try{
+ const cached=JSON.parse(localStorage.getItem(DATA_CACHE)||"null");
+ if(cached&&Array.isArray(cached.entries)&&Array.isArray(cached.beforeInfo)){
+  entries=cached.entries;
+  beforeInfo=cached.beforeInfo;
+  renderRace();
+ }
+}catch{}
+
+loadRaceData();
+setInterval(updateDataAge,60000);
 </script>
-</body></html>
+</body>
+</html>
