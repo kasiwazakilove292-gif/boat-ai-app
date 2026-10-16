@@ -63,6 +63,7 @@ jobs:
         run: |
           TODAY=$(TZ=Asia/Tokyo date +%F)
           HISTORY_END=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)
+          NEXT_DATE=""
 
           if [ "$INPUT_MODE" = "manual" ]; then
             RACE_DATE="$INPUT_DATE"
@@ -91,14 +92,13 @@ jobs:
                 $(date -d "$NEXT_DATE" +%s) -
                 $(date -d "$RACE_DATE" +%s)
               ) / 86400 ))
-
-              echo "$NEXT_DATE" > data/history_cursor.txt
             fi
           fi
 
           echo "race_date=$RACE_DATE" >> "$GITHUB_OUTPUT"
           echo "collect_days=$COLLECT_DAYS" >> "$GITHUB_OUTPUT"
           echo "history_active=$HISTORY_ACTIVE" >> "$GITHUB_OUTPUT"
+          echo "next_date=$NEXT_DATE" >> "$GITHUB_OUTPUT"
 
       - name: Collect yesterday's results
         if: github.event_name == 'schedule'
@@ -107,11 +107,21 @@ jobs:
           RACE_DATE="$RACE_DATE" COLLECT_DAYS=1 python collect_data.py
 
       - name: Collect historical results
-        if: steps.dates.outputs.history_active == 'true'
+        id: history
+        if: ${{ !cancelled() && steps.dates.outputs.history_active == 'true' }}
         env:
           RACE_DATE: ${{ steps.dates.outputs.race_date }}
           COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
         run: python collect_data.py
+
+      - name: Advance history progress after success
+        if: ${{ !cancelled() && steps.history.outcome == 'success' }}
+        env:
+          NEXT_DATE: ${{ steps.dates.outputs.next_date }}
+        run: |
+          test -n "$NEXT_DATE"
+          mkdir -p data
+          echo "$NEXT_DATE" > data/history_cursor.txt
 
       - name: Collect manually selected results
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'manual'
@@ -121,7 +131,7 @@ jobs:
         run: python collect_data.py
 
       - name: Collect motor information
-        if: github.event_name == 'schedule' || github.event.inputs.mode == 'motor_test'
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event.inputs.mode == 'motor_test') }}
         run: python collect_motor.py
 
       - name: Collect today's entries
@@ -160,7 +170,7 @@ jobs:
           fi
 
       - name: Downloadable CSV backup
-        if: hashFiles('data/omura_results.csv') != ''
+        if: ${{ always() && hashFiles('data/omura_results.csv') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: omura-results
