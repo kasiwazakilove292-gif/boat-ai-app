@@ -22,6 +22,7 @@ on:
           - history
           - manual
           - motor_test
+          - entries_test
 
   schedule:
     - cron: "0 0 * * *"
@@ -47,13 +48,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install extraction tool
-        if: github.event.inputs.mode != 'motor_test'
+        if: github.event.inputs.mode != 'motor_test' && github.event.inputs.mode != 'entries_test'
         run: |
           sudo apt-get update
           sudo apt-get install -y libarchive-tools
 
       - name: Choose race dates
-        if: github.event.inputs.mode != 'motor_test'
+        if: github.event.inputs.mode != 'motor_test' && github.event.inputs.mode != 'entries_test'
         id: dates
         env:
           INPUT_DATE: ${{ github.event.inputs.race_date }}
@@ -123,6 +124,12 @@ jobs:
         if: github.event_name == 'schedule' || github.event.inputs.mode == 'motor_test'
         run: python collect_motor.py
 
+      - name: Collect today's entries
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event.inputs.mode == 'entries_test') }}
+        run: |
+          TODAY=$(TZ=Asia/Tokyo date +%F)
+          RACE_DATE="$TODAY" COLLECT_DAYS=1 python collect_entries.py
+
       - name: Save CSV and history progress
         if: always()
         run: |
@@ -141,6 +148,10 @@ jobs:
             git add data/omura_motor_history.csv
           fi
 
+          if [ -f data/omura_entries.csv ]; then
+            git add data/omura_entries.csv
+          fi
+
           if git diff --cached --quiet; then
             echo "変更なし"
           else
@@ -154,4 +165,12 @@ jobs:
         with:
           name: omura-results
           path: data/omura_results.csv
+          retention-days: 30
+
+      - name: Downloadable entries backup
+        if: ${{ always() && hashFiles('data/omura_entries.csv') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: omura-entries
+          path: data/omura_entries.csv
           retention-days: 30
