@@ -1,0 +1,69 @@
+name: Omura Before Info
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,22,37,52 0-12 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omura-data-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Get repository files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Update today's entries
+        run: python collect_entries.py
+
+      - name: Collect before-race information
+        if: ${{ !cancelled() }}
+        run: python collect_beforeinfo.py
+
+      - name: Save collected data
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for FILE in data/omura_entries.csv data/omura_beforeinfo.csv; do
+            if [ -f "$FILE" ]; then
+              git add -- "$FILE"
+            fi
+          done
+
+          if [ -d data/beforeinfo ]; then
+            git add -- data/beforeinfo
+          fi
+
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "Update Omura before-race information"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Downloadable backup
+        if: ${{ always() && hashFiles('data/omura_beforeinfo.csv') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: omura-beforeinfo
+          path: |
+            data/omura_entries.csv
+            data/omura_beforeinfo.csv
+            data/beforeinfo/
+          retention-days: 30
