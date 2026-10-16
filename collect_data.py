@@ -116,9 +116,41 @@ def collect_one(race_date):
                 int(match.group(3).replace(",", ""))
             ])
 
-    if len(results) != 12:
+    # 不成立・中止のレースを公式の記載から確認
+    void_races = {
+        int(match.group(1))
+        for match in re.finditer(
+            r"^\s*(\d{1,2})R\s+(?:不成立|中止)(?=\s|$)",
+            omura,
+            re.MULTILINE
+        )
+    }
+
+    settled_races = {row[1] for row in results}
+    expected_races = set(range(1, 13))
+
+    if len(settled_races) != len(results):
         raise RuntimeError(
-            f"{date_str}: 抽出件数が{len(results)}件です"
+            f"{date_str}: レース番号が重複しています"
+        )
+
+    if settled_races & void_races:
+        raise RuntimeError(
+            f"{date_str}: 払戻結果と不成立・中止の記載が矛盾しています"
+        )
+
+    if settled_races | void_races != expected_races:
+        missing = sorted(
+            expected_races - settled_races - void_races
+        )
+        raise RuntimeError(
+            f"{date_str}: 確認できないレースがあります: {missing}"
+        )
+
+    if void_races:
+        print(
+            f"公式の不成立・中止: {sorted(void_races)}R"
+            "（払戻結果から除外）"
         )
 
     for row in results:
