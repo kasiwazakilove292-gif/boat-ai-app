@@ -1,0 +1,97 @@
+name: Omura Entries History
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "43 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omura-data-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Get repository files
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Choose historical dates
+        id: dates
+        run: |
+          python - <<'PY'
+          from datetime import date, datetime, timedelta, timezone
+          from pathlib import Path
+          import os
+
+          jst = timezone(timedelta(hours=9))
+          today = datetime.now(jst).date()
+          cursor = Path("data/entries_history_cursor.txt")
+          start = date.fromisoformat(
+              cursor.read_text().strip() if cursor.exists() else "2024-10-15"
+          )
+          end = min(start + timedelta(days=7), today)
+          days = max(0, (end - start).days)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print(f"race_date={start.isoformat()}", file=output)
+              print(f"collect_days={days}", file=output)
+              print(f"next_date={end.isoformat()}", file=output)
+
+          print(f"収集開始: {start} / 対象: {days}日分")
+          if days == 0:
+              print("昨日までの収集が完了しています")
+          PY
+
+      - name: Collect historical entries
+        id: entries
+        if: steps.dates.outputs.collect_days != '0'
+        env:
+          RACE_DATE: ${{ steps.dates.outputs.race_date }}
+          COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
+        run: python collect_entries.py
+
+      - name: Advance progress after success
+        if: steps.entries.outcome == 'success'
+        env:
+          NEXT_DATE: ${{ steps.dates.outputs.next_date }}
+        run: |
+          test -n "$NEXT_DATE"
+          mkdir -p data
+          printf '%s\n' "$NEXT_DATE" > data/entries_history_cursor.tmp
+          mv data/entries_history_cursor.tmp data/entries_history_cursor.txt
+          echo "次の収集開始日: $NEXT_DATE"
+
+      - name: Save entries and progress
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for FILE in data/omura_entries.csv data/entries_history_cursor.txt; do
+            if [ -f "$FILE" ]; then
+              git add -- "$FILE"
+            fi
+          done
+
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "Collect historical Omura entries"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
