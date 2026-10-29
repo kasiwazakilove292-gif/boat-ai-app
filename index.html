@@ -410,7 +410,46 @@ function updateDataAge(){
  if(age>20)node.textContent+="・古い可能性があります";
 }
 
+function renderCollectionStatus(){
+ let summary=$("collectionStatus");
+ if(!summary){
+  summary=document.createElement("details");
+  summary.id="collectionStatus";
+  summary.className="card";
+  $("dataStatus").closest(".card").after(summary);
+ }
+
+ const items=[
+  ["出走表",entries],
+  ["展示・直前情報",beforeInfo]
+ ];
+
+ summary.innerHTML=
+  "<summary>保存済みデータの件数を見る</summary>"+
+  items.map(([label,rows])=>{
+   const saved=rows.filter(r=>
+    r.venue==="24"&&
+    /^\d{4}-\d{2}-\d{2}$/.test(r.date)&&
+    /^(?:[1-9]|1[0-2])$/.test(r.race_no)
+   );
+   const dates=[...new Set(saved.map(r=>r.date))].sort();
+   const races=new Set(
+    saved.map(r=>r.date+":"+r.race_no)
+   ).size;
+
+   return '<p class="muted"><b>'+label+"</b><br>"+
+    (dates.length
+     ?races.toLocaleString("ja-JP")+"レース分 ／ "+
+      dates.length.toLocaleString("ja-JP")+"日分<br>"+
+      dates[0]+" 〜 "+dates.at(-1)
+     :"まだ読み込まれていません。")+
+    "</p>";
+  }).join("")+
+  '<p class="muted">この端末で読み込めたデータの件数です。日付の範囲内でも、未収集の日やレースが含まれる場合があります。</p>';
+}
+
 function renderRace(){
+ renderCollectionStatus();
  const day=$("dataDate").value;
  const race=$("dataRace").value;
  $("raceHeading").textContent=day+" 大村 "+race+"R";
