@@ -40,6 +40,7 @@ jobs:
 
     steps:
       - name: Get repository files
+        id: checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -140,6 +141,10 @@ jobs:
           TODAY=$(TZ=Asia/Tokyo date +%F)
           RACE_DATE="$TODAY" COLLECT_DAYS=1 python collect_entries.py
 
+      - name: Rebuild validation summaries
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: python build_validation.py
+
       - name: Save CSV and history progress
         if: always()
         run: |
@@ -162,11 +167,18 @@ jobs:
             git add data/omura_entries.csv
           fi
 
+          for FILE in data/validation_summary.json data/validation_races.csv; do
+            if [ -f "$FILE" ]; then
+              git add -- "$FILE"
+            fi
+          done
+
           if git diff --cached --quiet; then
             echo "変更なし"
           else
             git commit -m "Update Omura collected data"
-            git push
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
           fi
 
       - name: Downloadable CSV backup

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-30T18:27:24+00:00",
+  "method": {
+    "kind": "retrospective_fixed_rules",
+    "stake_per_race_yen": 100,
+    "bet_type": "3連単",
+    "uses_exhibition": false,
+    "refunds": "unavailable_assumed_zero",
+    "holdout_fraction_of_race_days": 0.2
+  },
+  "sources": [
+    {
+      "file": "omura_entries.csv",
+      "sha256": "53c428a42faa8949dbc29f4fadc04bc00e9c1963a497fc9f69845730070c41a7"
+    },
+    {
+      "file": "omura_results.csv",
+      "sha256": "eea2fe721cab32e720a98a2ca5ad2ac0a62d32fdcc87e4d5c8a7a0f1f26e04fc"
+    },
+    {
+      "file": "beforeinfo/2026-10-16.csv",
+      "sha256": "a82eefdba7fbe468979a6da114c1ddbd50ec5a3cb9619c67e9529193e5a3b9fa"
+    },
+    {
+      "file": "beforeinfo/2026-10-17.csv",
+      "sha256": "5b62e3904c9fbadb9e9e76fcee9667244f14835997e434cc214774acafd85bdf"
+    },
+    {
+      "file": "beforeinfo/2026-10-22.csv",
+      "sha256": "08e0f8eb0769c46c20c7406b1dc1fe92a33808ab32181890db4777ce764ee8a3"
+    },
+    {
+      "file": "beforeinfo/2026-10-23.csv",
+      "sha256": "0300c5b4b1423e16a34b05a981707a25844d729e77c36ce4cfbf78006e538821"
+    },
+    {
+      "file": "beforeinfo/2026-10-24.csv",
+      "sha256": "dab3b9b3a028958eb38ca5954c30b7a85233a5ca1440cf1ac3f6be076723ca7c"
+    },
+    {
+      "file": "beforeinfo/2026-10-25.csv",
+      "sha256": "560ac7e6229520672e76ecd77d3ddad04ec10beb930351a9222e63fd46e6e079"
+    },
+    {
+      "file": "beforeinfo/2026-10-26.csv",
+      "sha256": "75c116cacd829ce07df1a1d0b70469f6f60020b30bbaff73990c59c405df0ee8"
+    },
+    {
+      "file": "beforeinfo/2026-10-27.csv",
+      "sha256": "9c5e3e117e3d44cc915a46d691b1651d371409773f6411d539d4f2efd067e9fd"
+    },
+    {
+      "file": "beforeinfo/2026-10-30.csv",
+      "sha256": "512ad543c64bd989ad75af18e7e3100375617d2f63cf880b9c01df8f40f2535c"
+    },
+    {
+      "file": "omura_beforeinfo.csv",
+      "sha256": "892ba42e1cd487b657a5c4cf426ebf49eb1e1fc3a46e67741dd5cf574a80a779"
+    }
+  ],
+  "data": {
+    "entry_rows": 29448,
+    "entry_races": 4908,
+    "complete_entry_races": 4908,
+    "result_rows": 3956,
+    "valid_result_races": 3956,
+    "eligible_races": 3956,
+    "result_races_without_complete_entries": 0,
+    "joined_races_without_valid_rates": 0,
+    "entry_races_without_results": 952,
+    "beforeinfo_races": 108,
+    "predeadline_exhibition_races": 46,
+    "predeadline_exhibition_with_result": 42,
+    "retrospective_entry_races": 3956,
+    "entry_timestamp_unknown_races": 0,
+    "race_days": 330,
+    "first_date": "2024-10-26",
+    "last_date": "2026-10-27",
+    "recent_start": "2026-02-20",
+    "recent_days": 66
+  },
+  "issues": {},
+  "benchmarks": [
+    {
+      "id": "lane_order",
+      "label": "艇番順 1-2-3",
+      "all": {
+        "races": 3956,
+        "hits": 323,
+        "stake_yen": 395600,
+        "payout_yen": 309880,
+        "net_yen": -85720,
+        "roi_pct": 78.33,
+        "hit_pct": 8.16
+      },
+      "recent": {
+        "races": 791,
+        "hits": 72,
+        "stake_yen": 79100,
+        "payout_yen": 63380,
+        "net_yen": -15720,
+        "roi_pct": 80.13,
+        "hit_pct": 9.1
+      }
+    },
+    {
+      "id": "national_win_rate",
+      "label": "全国勝率の高い順（同率は艇番順）",
+      "all": {
+        "races": 3956,
+        "hits": 143,
+        "stake_yen": 395600,
+        "payout_yen": 271650,
+        "net_yen": -123950,
+        "roi_pct": 68.67,
+        "hit_pct": 3.61
+      },
+      "recent": {
+        "races": 791,
+        "hits": 44,
+        "stake_yen": 79100,
+        "payout_yen": 105550,
+        "net_yen": 26450,
+        "roi_pct": 133.44,
+        "hit_pct": 5.56
+      }
+    }
+  ]
+}

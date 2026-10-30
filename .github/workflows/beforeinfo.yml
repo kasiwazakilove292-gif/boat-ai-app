@@ -19,6 +19,7 @@ jobs:
 
     steps:
       - name: Get repository files
+        id: checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -33,13 +34,17 @@ jobs:
         if: ${{ !cancelled() }}
         run: python collect_beforeinfo.py
 
+      - name: Rebuild validation summaries
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: python build_validation.py
+
       - name: Save collected data
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          for FILE in data/omura_entries.csv data/omura_beforeinfo.csv; do
+          for FILE in data/omura_entries.csv data/omura_beforeinfo.csv data/validation_summary.json data/validation_races.csv; do
             if [ -f "$FILE" ]; then
               git add -- "$FILE"
             fi

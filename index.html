@@ -28,6 +28,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;p
 .hidden{display:none!important}.record{border-top:1px solid #e4eaf0;padding:10px 0}.record:first-child{border-top:0}
 footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 @media(min-width:600px){main{padding:20px}.grid{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:420px){.nav{gap:5px}.nav button{font-size:12px;padding:10px 9px}}
 .racer{border:1px solid #e0e7ed;border-radius:13px;padding:12px;margin-top:10px}
 .lane{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #aebcc7;border-radius:8px;font-weight:800;margin-right:8px;flex-shrink:0}
 .lane1{background:#fff;color:#172b3a}.lane2{background:#222;color:#fff}.lane3{background:#df333e;color:#fff}.lane4{background:#1769aa;color:#fff}.lane5{background:#ffdf50;color:#172b3a}.lane6{background:#07865b;color:#fff}
@@ -52,6 +53,7 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <button data-tab="predict">買い目記録</button>
 <button data-tab="results">結果入力</button>
 <button data-tab="stats">成績</button>
+<button data-tab="validation">過去検証</button>
 </div>
 
 <section id="race">
@@ -93,7 +95,7 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <div class="field"><label>券種</label><select id="betType"><option>3連単</option><option>2連単</option><option>3連複</option></select></div>
 <div class="field"><label>買い目</label><input id="combination" placeholder="例：1-2-3" required></div>
 <div class="field"><label>オッズ（倍）</label><input id="odds" type="number" min="1" max="10000" step=".1" value="10" required></div>
-<div class="field"><label>自分の推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".1" value="10" required></div>
+<div class="field"><label>自分の推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".01" value="10" required></div>
 <div class="field"><label>購入候補額（円）</label><input id="stake" type="number" min="0" max="5000" step="100" value="100" required></div>
 <div class="field wide"><label>メモ（任意）</label><input id="notes" placeholder="展示・風・予想理由など"></div>
 </div>
@@ -108,6 +110,14 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 </section>
 
 <section id="results" class="hidden">
+<div class="card">
+<h2>保存済みの公式結果と照合</h2>
+<p class="muted">大村・3連単の未確定記録を照合します。的中が一致した記録だけ、購入額に応じた総払戻を計算できます。着順が違う記録は、返還の有無を確認して下から入力してください。</p>
+<button id="matchResults" class="btn secondary">公式結果を読み込んで照合</button>
+<div id="matchStatus" class="muted" role="status" aria-live="polite"></div>
+<div id="matchPreview"></div>
+<button id="applyMatched" class="btn hidden">一致した的中記録を保存</button>
+</div>
 <div class="card">
 <h2>未確定の結果を入力</h2>
 <div id="pending"></div>
@@ -135,9 +145,20 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 </div>
 </section>
 
+<section id="validation" class="hidden">
+<div class="card">
+<div class="row"><h2 style="margin:0">過去データで確かめる</h2><span class="pill">固定ルール</span></div>
+<p class="muted">自動予想を評価するための比較基準です。3連単を1レース1点・100円ずつ記録した場合を再計算します。</p>
+<button id="refreshValidation" class="btn secondary">検証データを更新</button>
+<p id="validationStatus" class="muted" role="status" aria-live="polite">「検証データを更新」で集計を読み込めます。</p>
+</div>
+<div id="validationContent"></div>
+</section>
+
 <footer>買い目の記録はこの端末のブラウザ内に保存されます。ブラウザデータを消去すると記録も消えるため、定期的にCSV保存してください。利益は保証されません。</footer>
 </main>
 
+<script src="./boat-core.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const STORE="boat_ai_pwa_v1";
@@ -170,7 +191,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
  document.querySelectorAll(".nav button").forEach(x=>{
   x.classList.toggle("active",x===b);
  });
- ["race","predict","results","stats"].forEach(t=>{
+ ["race","predict","results","stats","validation"].forEach(t=>{
   $(t).classList.toggle("hidden",t!==b.dataset.tab);
  });
  render();
@@ -245,7 +266,7 @@ function render(){
  </div>
  <div class="field">
  <label>総払戻額（円）</label>
- <input id="pay${r.id}" type="number" min="0" step="100" value="${Math.round(r.stake*r.odds)}">
+ <input id="pay${r.id}" type="number" min="0" step="10" value="${Math.round(r.stake*r.odds)}">
  </div>
  <div class="wide">
  <button class="btn" onclick="settle(${r.id})">結果を保存</button>
@@ -274,7 +295,7 @@ function render(){
  <td>${E(r.date)}<br>${E(r.venue)} ${r.raceNo}R</td>
  <td>${E(r.betType)}<br>${E(r.combination)}<br>
  <small>オッズ ${E(r.odds)} / 確率 ${(r.probability*100).toFixed(1)}%</small></td>
- <td>${yen(r.stake)}</td><td>${E(r.result)}</td><td>${yen(r.payout)}</td>
+ <td>${yen(r.stake)}</td><td>${E(r.result)}${r.resultSource==="official_saved_trifecta"?"<br><small>公式結果と照合</small>":""}</td><td>${yen(r.payout)}</td>
  </tr>`).join("")}
  </tbody></table>`:"<p class='muted'>記録はまだありません。</p>";
 }
@@ -286,7 +307,7 @@ window.settle=id=>{
  let payout=Number($("pay"+id).value||0);
  if(result==="不的中")payout=0;
  if(result==="返還")payout=r.stake;
- if(result==="的中"&&payout<0){
+ if(!Number.isSafeInteger(payout)||payout<0||(result==="的中"&&payout===0)){
   alert("払戻額を確認してください");
   return;
  }
@@ -296,7 +317,7 @@ window.settle=id=>{
 };
 
 $("export").onclick=()=>{
- const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes"];
+ const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes","resultSource","matchedAt"];
  const esc=x=>'"'+String(x??"").replaceAll('"','""')+'"';
  const csv=[
   cols.join(","),
@@ -322,7 +343,9 @@ if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
 }
 
 // 出走表と直前情報
-const DATA_ROOT="https://raw.githubusercontent.com/kasiwazakilove292-gif/boat-ai-app/main/data/";
+const DATA_ROOT=location.hostname.endsWith(".github.io")
+ ?"https://raw.githubusercontent.com/kasiwazakilove292-gif/boat-ai-app/main/data/"
+ :new URL("./data/",location.href).href;
 const DATA_CACHE="boat_ai_race_data_v1";
 let entries=[],beforeInfo=[],dataError="",loadingData=false;
 
@@ -342,48 +365,7 @@ const timeText=value=>
 const show=value=>value===""||value==null?"—":E(value);
 
 function csvRows(text){
- text=text.replace(/^\uFEFF/,"");
- const rows=[];
- let row=[],cell="",quoted=false;
-
- for(let i=0;i<text.length;i++){
-  const c=text[i];
-  if(c==='"'){
-   if(quoted&&text[i+1]==='"'){
-    cell+='"';
-    i++;
-   }else{
-    quoted=!quoted;
-   }
-  }else if(c===","&&!quoted){
-   row.push(cell);
-   cell="";
-  }else if((c==="\n"||c==="\r")&&!quoted){
-   if(c==="\r"&&text[i+1]==="\n")i++;
-   row.push(cell);
-   if(row.some(x=>x!==""))rows.push(row);
-   row=[];
-   cell="";
-  }else{
-   cell+=c;
-  }
- }
-
- if(quoted)throw new Error("CSVの引用符が閉じていません");
- if(cell!==""||row.length){
-  row.push(cell);
-  rows.push(row);
- }
- const headers=rows.shift()||[];
- if(!["date","venue","race_no","boat_no"].every(k=>headers.includes(k))){
-  throw new Error("CSV形式を確認できません");
- }
- return rows.map(values=>{
-  if(values.length!==headers.length){
-   throw new Error("CSVの列数が異なります");
-  }
-  return Object.fromEntries(headers.map((h,i)=>[h,values[i]]));
- });
+ return BoatCore.parseCSV(text,["date","venue","race_no","boat_no"]);
 }
 
 async function fetchData(filename){
@@ -599,5 +581,6 @@ try{
 loadRaceData();
 setInterval(updateDataAge,60000);
 </script>
+<script src="./validation.js"></script>
 </body>
 </html>
