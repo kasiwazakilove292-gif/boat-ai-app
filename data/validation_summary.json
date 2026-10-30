@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T19:27:26+00:00",
+  "generated_at": "2026-10-30T20:49:44+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -16,7 +16,7 @@
     },
     {
       "file": "omura_results.csv",
-      "sha256": "d8df7166d8f6a9df428bb09973026cd308b4916867b8943004cad4dc76384ab7"
+      "sha256": "a2bf9a664d87c453acec47cad95ea3e968178f96247838c4e0e9d31c260b3403"
     },
     {
       "file": "beforeinfo/2026-10-16.csv",
@@ -64,34 +64,34 @@
     },
     {
       "file": "omura_void_races.csv",
-      "sha256": "b9e0343dd48f2d29547d06780124b54f0556ca27a9ae88e7279f8d7e7b98c188"
+      "sha256": "fd8dfb41ca9bb7d7f59c35114d77cb7508e1bad06930548691474e3459bea81b"
     }
   ],
   "data": {
     "entry_rows": 29448,
     "entry_races": 4908,
     "complete_entry_races": 4908,
-    "result_rows": 3980,
-    "valid_result_races": 3980,
-    "eligible_races": 3980,
+    "result_rows": 4051,
+    "valid_result_races": 4051,
+    "eligible_races": 4051,
     "result_races_without_complete_entries": 0,
     "joined_races_without_valid_rates": 0,
-    "entry_races_without_results": 928,
+    "entry_races_without_results": 857,
     "beforeinfo_races": 108,
     "predeadline_exhibition_races": 46,
     "predeadline_exhibition_with_result": 46,
-    "retrospective_entry_races": 3980,
+    "retrospective_entry_races": 4051,
     "entry_timestamp_unknown_races": 0,
-    "race_days": 332,
+    "race_days": 338,
     "first_date": "2024-10-26",
     "last_date": "2026-10-30",
-    "recent_start": "2026-02-21",
-    "recent_days": 67
+    "recent_start": "2026-02-28",
+    "recent_days": 68
   },
   "result_coverage": {
     "as_of_date": "2026-10-31",
     "history_cursor": "2026-05-13",
-    "total_unmatched": 928,
+    "total_unmatched": 857,
     "categories": [
       {
         "status": "invalid_result",
@@ -101,7 +101,7 @@
       {
         "status": "official_void",
         "label": "公式確認済みの中止・不成立",
-        "races": 4
+        "races": 5
       },
       {
         "status": "current_or_future",
@@ -111,7 +111,7 @@
       {
         "status": "history_pending",
         "label": "過去収集の進行待ち",
-        "races": 924
+        "races": 852
       },
       {
         "status": "past_unresolved",
@@ -137,28 +137,8 @@
         "races": 1
       },
       {
-        "date": "2026-05-25",
-        "races": 12
-      },
-      {
-        "date": "2026-05-26",
-        "races": 12
-      },
-      {
-        "date": "2026-05-27",
-        "races": 12
-      },
-      {
         "date": "2026-05-28",
-        "races": 12
-      },
-      {
-        "date": "2026-05-29",
-        "races": 12
-      },
-      {
-        "date": "2026-06-01",
-        "races": 12
+        "races": 1
       },
       {
         "date": "2026-06-02",
@@ -452,44 +432,44 @@
       "id": "lane_order",
       "label": "艇番順 1-2-3",
       "all": {
-        "races": 3980,
-        "hits": 323,
-        "stake_yen": 398000,
-        "payout_yen": 309880,
-        "net_yen": -88120,
-        "roi_pct": 77.86,
-        "hit_pct": 8.12
+        "races": 4051,
+        "hits": 327,
+        "stake_yen": 405100,
+        "payout_yen": 313200,
+        "net_yen": -91900,
+        "roi_pct": 77.31,
+        "hit_pct": 8.07
       },
       "recent": {
-        "races": 803,
-        "hits": 72,
-        "stake_yen": 80300,
-        "payout_yen": 63380,
-        "net_yen": -16920,
-        "roi_pct": 78.93,
-        "hit_pct": 8.97
+        "races": 814,
+        "hits": 69,
+        "stake_yen": 81400,
+        "payout_yen": 60620,
+        "net_yen": -20780,
+        "roi_pct": 74.47,
+        "hit_pct": 8.48
       }
     },
     {
       "id": "national_win_rate",
       "label": "全国勝率の高い順（同率は艇番順）",
       "all": {
-        "races": 3980,
-        "hits": 144,
-        "stake_yen": 398000,
-        "payout_yen": 272080,
-        "net_yen": -125920,
-        "roi_pct": 68.36,
-        "hit_pct": 3.62
+        "races": 4051,
+        "hits": 146,
+        "stake_yen": 405100,
+        "payout_yen": 273630,
+        "net_yen": -131470,
+        "roi_pct": 67.55,
+        "hit_pct": 3.6
       },
       "recent": {
-        "races": 803,
-        "hits": 44,
-        "stake_yen": 80300,
-        "payout_yen": 103660,
-        "net_yen": 23360,
-        "roi_pct": 129.09,
-        "hit_pct": 5.48
+        "races": 814,
+        "hits": 43,
+        "stake_yen": 81400,
+        "payout_yen": 94280,
+        "net_yen": 12880,
+        "roi_pct": 115.82,
+        "hit_pct": 5.28
       }
     }
   ]
