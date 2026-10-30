@@ -53,7 +53,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          for FILE in data/omura_entries.csv data/omura_beforeinfo.csv data/validation_summary.json data/validation_races.csv data/prediction_model.json; do
+          for FILE in data/omura_entries.csv data/omura_beforeinfo.csv data/validation_summary.json data/validation_races.csv data/result_coverage.csv data/prediction_model.json; do
             if [ -f "$FILE" ]; then
               git add -- "$FILE"
             fi
