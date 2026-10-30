@@ -76,13 +76,17 @@ jobs:
           mv data/entries_history_cursor.tmp data/entries_history_cursor.txt
           echo "次の収集開始日: $NEXT_DATE"
 
+      - name: Rebuild validation summaries
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: python build_validation.py
+
       - name: Save entries and progress
         if: ${{ always() && steps.checkout.outcome == 'success' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          for FILE in data/omura_entries.csv data/entries_history_cursor.txt; do
+          for FILE in data/omura_entries.csv data/entries_history_cursor.txt data/validation_summary.json data/validation_races.csv; do
             if [ -f "$FILE" ]; then
               git add -- "$FILE"
             fi
