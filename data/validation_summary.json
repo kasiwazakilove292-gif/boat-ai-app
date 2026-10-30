@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T18:27:24+00:00",
+  "generated_at": "2026-10-30T19:27:26+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -16,7 +16,7 @@
     },
     {
       "file": "omura_results.csv",
-      "sha256": "eea2fe721cab32e720a98a2ca5ad2ac0a62d32fdcc87e4d5c8a7a0f1f26e04fc"
+      "sha256": "d8df7166d8f6a9df428bb09973026cd308b4916867b8943004cad4dc76384ab7"
     },
     {
       "file": "beforeinfo/2026-10-16.csv",
@@ -57,28 +57,394 @@
     {
       "file": "omura_beforeinfo.csv",
       "sha256": "892ba42e1cd487b657a5c4cf426ebf49eb1e1fc3a46e67741dd5cf574a80a779"
+    },
+    {
+      "file": "history_cursor.txt",
+      "sha256": "6d45bf10b3fb8cf7e2cae0bc1b3e5d37524c870d593a9c229ecf742ff678606d"
+    },
+    {
+      "file": "omura_void_races.csv",
+      "sha256": "b9e0343dd48f2d29547d06780124b54f0556ca27a9ae88e7279f8d7e7b98c188"
     }
   ],
   "data": {
     "entry_rows": 29448,
     "entry_races": 4908,
     "complete_entry_races": 4908,
-    "result_rows": 3956,
-    "valid_result_races": 3956,
-    "eligible_races": 3956,
+    "result_rows": 3980,
+    "valid_result_races": 3980,
+    "eligible_races": 3980,
     "result_races_without_complete_entries": 0,
     "joined_races_without_valid_rates": 0,
-    "entry_races_without_results": 952,
+    "entry_races_without_results": 928,
     "beforeinfo_races": 108,
     "predeadline_exhibition_races": 46,
-    "predeadline_exhibition_with_result": 42,
-    "retrospective_entry_races": 3956,
+    "predeadline_exhibition_with_result": 46,
+    "retrospective_entry_races": 3980,
     "entry_timestamp_unknown_races": 0,
-    "race_days": 330,
+    "race_days": 332,
     "first_date": "2024-10-26",
-    "last_date": "2026-10-27",
-    "recent_start": "2026-02-20",
-    "recent_days": 66
+    "last_date": "2026-10-30",
+    "recent_start": "2026-02-21",
+    "recent_days": 67
+  },
+  "result_coverage": {
+    "as_of_date": "2026-10-31",
+    "history_cursor": "2026-05-13",
+    "total_unmatched": 928,
+    "categories": [
+      {
+        "status": "invalid_result",
+        "label": "結果の重複・形式不正",
+        "races": 0
+      },
+      {
+        "status": "official_void",
+        "label": "公式確認済みの中止・不成立",
+        "races": 4
+      },
+      {
+        "status": "current_or_future",
+        "label": "当日・未来（結果待ちを含む）",
+        "races": 0
+      },
+      {
+        "status": "history_pending",
+        "label": "過去収集の進行待ち",
+        "races": 924
+      },
+      {
+        "status": "past_unresolved",
+        "label": "過去分の未照合・要確認",
+        "races": 0
+      }
+    ],
+    "days": [
+      {
+        "date": "2025-03-13",
+        "races": 1
+      },
+      {
+        "date": "2025-04-14",
+        "races": 1
+      },
+      {
+        "date": "2025-12-03",
+        "races": 1
+      },
+      {
+        "date": "2026-03-02",
+        "races": 1
+      },
+      {
+        "date": "2026-05-25",
+        "races": 12
+      },
+      {
+        "date": "2026-05-26",
+        "races": 12
+      },
+      {
+        "date": "2026-05-27",
+        "races": 12
+      },
+      {
+        "date": "2026-05-28",
+        "races": 12
+      },
+      {
+        "date": "2026-05-29",
+        "races": 12
+      },
+      {
+        "date": "2026-06-01",
+        "races": 12
+      },
+      {
+        "date": "2026-06-02",
+        "races": 12
+      },
+      {
+        "date": "2026-06-03",
+        "races": 12
+      },
+      {
+        "date": "2026-06-04",
+        "races": 12
+      },
+      {
+        "date": "2026-06-06",
+        "races": 12
+      },
+      {
+        "date": "2026-06-07",
+        "races": 12
+      },
+      {
+        "date": "2026-06-08",
+        "races": 12
+      },
+      {
+        "date": "2026-06-09",
+        "races": 12
+      },
+      {
+        "date": "2026-06-10",
+        "races": 12
+      },
+      {
+        "date": "2026-06-17",
+        "races": 12
+      },
+      {
+        "date": "2026-06-18",
+        "races": 12
+      },
+      {
+        "date": "2026-06-19",
+        "races": 12
+      },
+      {
+        "date": "2026-06-20",
+        "races": 12
+      },
+      {
+        "date": "2026-06-21",
+        "races": 12
+      },
+      {
+        "date": "2026-06-22",
+        "races": 12
+      },
+      {
+        "date": "2026-06-26",
+        "races": 12
+      },
+      {
+        "date": "2026-06-27",
+        "races": 12
+      },
+      {
+        "date": "2026-06-28",
+        "races": 12
+      },
+      {
+        "date": "2026-06-29",
+        "races": 12
+      },
+      {
+        "date": "2026-06-30",
+        "races": 12
+      },
+      {
+        "date": "2026-07-01",
+        "races": 12
+      },
+      {
+        "date": "2026-07-02",
+        "races": 12
+      },
+      {
+        "date": "2026-07-05",
+        "races": 12
+      },
+      {
+        "date": "2026-07-06",
+        "races": 12
+      },
+      {
+        "date": "2026-07-07",
+        "races": 12
+      },
+      {
+        "date": "2026-07-08",
+        "races": 12
+      },
+      {
+        "date": "2026-07-09",
+        "races": 12
+      },
+      {
+        "date": "2026-07-14",
+        "races": 12
+      },
+      {
+        "date": "2026-07-15",
+        "races": 12
+      },
+      {
+        "date": "2026-07-16",
+        "races": 12
+      },
+      {
+        "date": "2026-07-17",
+        "races": 12
+      },
+      {
+        "date": "2026-07-22",
+        "races": 12
+      },
+      {
+        "date": "2026-07-23",
+        "races": 12
+      },
+      {
+        "date": "2026-07-24",
+        "races": 12
+      },
+      {
+        "date": "2026-07-25",
+        "races": 12
+      },
+      {
+        "date": "2026-07-28",
+        "races": 12
+      },
+      {
+        "date": "2026-07-29",
+        "races": 12
+      },
+      {
+        "date": "2026-07-30",
+        "races": 12
+      },
+      {
+        "date": "2026-07-31",
+        "races": 12
+      },
+      {
+        "date": "2026-08-06",
+        "races": 12
+      },
+      {
+        "date": "2026-08-07",
+        "races": 12
+      },
+      {
+        "date": "2026-08-08",
+        "races": 12
+      },
+      {
+        "date": "2026-08-09",
+        "races": 12
+      },
+      {
+        "date": "2026-08-10",
+        "races": 12
+      },
+      {
+        "date": "2026-08-12",
+        "races": 12
+      },
+      {
+        "date": "2026-08-13",
+        "races": 12
+      },
+      {
+        "date": "2026-08-14",
+        "races": 12
+      },
+      {
+        "date": "2026-08-15",
+        "races": 12
+      },
+      {
+        "date": "2026-08-16",
+        "races": 12
+      },
+      {
+        "date": "2026-08-17",
+        "races": 12
+      },
+      {
+        "date": "2026-08-20",
+        "races": 12
+      },
+      {
+        "date": "2026-08-21",
+        "races": 12
+      },
+      {
+        "date": "2026-08-22",
+        "races": 12
+      },
+      {
+        "date": "2026-08-23",
+        "races": 12
+      },
+      {
+        "date": "2026-09-08",
+        "races": 12
+      },
+      {
+        "date": "2026-09-09",
+        "races": 12
+      },
+      {
+        "date": "2026-09-10",
+        "races": 12
+      },
+      {
+        "date": "2026-09-11",
+        "races": 12
+      },
+      {
+        "date": "2026-09-12",
+        "races": 12
+      },
+      {
+        "date": "2026-09-17",
+        "races": 12
+      },
+      {
+        "date": "2026-09-18",
+        "races": 12
+      },
+      {
+        "date": "2026-09-19",
+        "races": 12
+      },
+      {
+        "date": "2026-09-20",
+        "races": 12
+      },
+      {
+        "date": "2026-09-28",
+        "races": 12
+      },
+      {
+        "date": "2026-09-29",
+        "races": 12
+      },
+      {
+        "date": "2026-09-30",
+        "races": 12
+      },
+      {
+        "date": "2026-10-01",
+        "races": 12
+      },
+      {
+        "date": "2026-10-02",
+        "races": 12
+      },
+      {
+        "date": "2026-10-06",
+        "races": 12
+      },
+      {
+        "date": "2026-10-07",
+        "races": 12
+      },
+      {
+        "date": "2026-10-08",
+        "races": 12
+      },
+      {
+        "date": "2026-10-09",
+        "races": 12
+      }
+    ]
   },
   "issues": {},
   "benchmarks": [
@@ -86,44 +452,44 @@
       "id": "lane_order",
       "label": "艇番順 1-2-3",
       "all": {
-        "races": 3956,
+        "races": 3980,
         "hits": 323,
-        "stake_yen": 395600,
+        "stake_yen": 398000,
         "payout_yen": 309880,
-        "net_yen": -85720,
-        "roi_pct": 78.33,
-        "hit_pct": 8.16
+        "net_yen": -88120,
+        "roi_pct": 77.86,
+        "hit_pct": 8.12
       },
       "recent": {
-        "races": 791,
+        "races": 803,
         "hits": 72,
-        "stake_yen": 79100,
+        "stake_yen": 80300,
         "payout_yen": 63380,
-        "net_yen": -15720,
-        "roi_pct": 80.13,
-        "hit_pct": 9.1
+        "net_yen": -16920,
+        "roi_pct": 78.93,
+        "hit_pct": 8.97
       }
     },
     {
       "id": "national_win_rate",
       "label": "全国勝率の高い順（同率は艇番順）",
       "all": {
-        "races": 3956,
-        "hits": 143,
-        "stake_yen": 395600,
-        "payout_yen": 271650,
-        "net_yen": -123950,
-        "roi_pct": 68.67,
-        "hit_pct": 3.61
+        "races": 3980,
+        "hits": 144,
+        "stake_yen": 398000,
+        "payout_yen": 272080,
+        "net_yen": -125920,
+        "roi_pct": 68.36,
+        "hit_pct": 3.62
       },
       "recent": {
-        "races": 791,
+        "races": 803,
         "hits": 44,
-        "stake_yen": 79100,
-        "payout_yen": 105550,
-        "net_yen": 26450,
-        "roi_pct": 133.44,
-        "hit_pct": 5.56
+        "stake_yen": 80300,
+        "payout_yen": 103660,
+        "net_yen": 23360,
+        "roi_pct": 129.09,
+        "hit_pct": 5.48
       }
     }
   ]

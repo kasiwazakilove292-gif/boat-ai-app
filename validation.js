@@ -24,6 +24,16 @@
   const period=windowName==="recent"
    ?`${d.recent_start} 〜 ${d.last_date}（直近${number(d.recent_days)}開催日分）`
    :`${d.first_date} 〜 ${d.last_date}（${number(d.race_days)}開催日分）`;
+  const coverage=summary.result_coverage;
+  const coverageHTML=coverage?`<div class="card">
+    <h2>結果が未照合のレースを確認</h2>
+    <p class="muted">${E(coverage.as_of_date)}（日本時間）時点の分類。結果の過去収集は${E(coverage.history_cursor||"進行位置不明")}から進める予定です。</p>
+    <table><thead><tr><th>内訳</th><th>レース数</th></tr></thead><tbody>
+     ${coverage.categories.map(c=>`<tr><th scope="row">${E(c.label)}</th><td>${number(c.races)}R</td></tr>`).join("")}
+    </tbody></table>
+    <p class="muted">進行待ちは収集位置からの分類です。公開済みかどうかは未確認で、中止・不成立は公式ファイルで確認したものだけを区別します。当日・未来の分類も未公開を証明するものではありません。</p>
+    <a class="muted" href="${E(DATA_ROOT)}result_coverage.csv" target="_blank" rel="noopener">日付・レース別の未照合一覧CSVを開く ↗</a>
+   </div>`:"";
   const table=summary.benchmarks.map(rule=>{
    const b=rule[windowName];
    return `<tr><th scope="row">${E(rule.label)}</th>
@@ -39,10 +49,11 @@
      <div class="metric"><small>締切前に6艇の展示を保存</small><strong>${number(d.predeadline_exhibition_races)}R</strong></div>
      <div class="metric"><small>そのうち結果も保存済み</small><strong>${number(d.predeadline_exhibition_with_result)}R</strong></div>
     </div>
-    <p class="muted">出走表のみで結果が未収集：${number(d.entry_races_without_results)}R。結果と6艇の出走表を結合できない：${number(d.result_races_without_complete_entries)}R。勝率不足による検証除外：${number(d.joined_races_without_valid_rates)}R。</p>
+    <p class="muted">出走表と有効な結果が未照合：${number(d.entry_races_without_results)}R。結果と6艇の出走表を結合できない：${number(d.result_races_without_complete_entries)}R。勝率不足による検証除外：${number(d.joined_races_without_valid_rates)}R。</p>
     <div class="warn">これは過去にさかのぼった参考検証です。対象のうち${number(d.retrospective_entry_races)}Rはレース日より後に出走表を取得しています。実運用で締切前に出した予想の成績とは区別してください。展示・気象・モーター履歴は今回の比較には使っていません。</div>
     ${issues?`<p class="warn">形式不正・重複など${number(issues)}件を検出しました。該当データは集計で除外・保留しています。</p>`:""}
    </div>
+   ${coverageHTML}
    <div class="card">
     <h2>比較の基準となる2つのルール</h2>
     <p class="warn">返還未反映の参考値です。元の結果CSVには返還情報がないため、着順不一致の買い目は返還対象でも支出100円・払戻0円として仮計算しています。正式な回収率ではありません。</p>

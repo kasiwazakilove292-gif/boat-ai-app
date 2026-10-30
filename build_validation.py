@@ -13,6 +13,8 @@ import json
 import math
 import re
 
+from result_coverage import classify, load_context, COVERAGE_FIELDS
+
 ENTRY_FIELDS = {"date", "venue", "race_no", "boat_no", "racer_id",
                 "racer_name", "national_win_rate", "collected_at"}
 RESULT_FIELDS = {"date", "race", "trifecta", "payout_yen"}
@@ -74,7 +76,7 @@ def benchmark(races, rule):
             "hit_pct": round(hits / count * 100, 2) if count else None}
 
 
-def build(data_dir):
+def build(data_dir, *, as_of=None):
     issues = Counter()
     paths = [data_dir / "omura_entries.csv", data_dir / "omura_results.csv"]
     entries = read_rows(paths[0], ENTRY_FIELDS)
@@ -180,6 +182,13 @@ def build(data_dir):
         else:
             issues["beforeinfo_identity_mismatch_races"] += 1
 
+    cursor, voids = load_context(data_dir)
+    coverage = classify(complete, valid_results, set(result_groups) | invalid_result_keys,
+                        voids, as_of or datetime.now(JST).date(), cursor)
+    for optional in ("history_cursor.txt", "omura_void_races.csv"):
+        if (data_dir / optional).exists():
+            paths.append(data_dir / optional)
+
     joined = []
     missing_entries = 0
     missing_rates = 0
@@ -241,6 +250,7 @@ def build(data_dir):
                  "race_days": len(days), "first_date": days[0] if days else None,
                  "last_date": days[-1] if days else None,
                  "recent_start": holdout_start, "recent_days": holdout_days},
+        "result_coverage": coverage,
         "issues": dict(sorted(issues.items())),
         "benchmarks": [{"id": rule, "label": label,
                         "all": benchmark(joined, rule),
@@ -251,17 +261,20 @@ def build(data_dir):
 
 def write_outputs(data_dir, summary, joined):
     output = data_dir / "validation_summary.json"
+    document = {**summary, "result_coverage": {k: v for k, v in summary["result_coverage"].items()
+                                              if k != "races"}}
     if output.exists():
         try:
             previous = json.loads(output.read_text(encoding="utf-8"))
             old_time = previous.pop("generated_at", None)
-            current = {k: v for k, v in summary.items() if k != "generated_at"}
+            current = {k: v for k, v in document.items() if k != "generated_at"}
             if old_time and previous == current:
                 summary["generated_at"] = old_time
+                document["generated_at"] = old_time
         except (ValueError, TypeError, AttributeError):
             pass
     temporary = output.with_suffix(".tmp")
-    temporary.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+    temporary.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n",
                          encoding="utf-8")
     temporary.replace(output)
     output = data_dir / "validation_races.csv"
@@ -273,6 +286,13 @@ def write_outputs(data_dir, summary, joined):
         writer = csv.DictWriter(file, fieldnames=fields)
         writer.writeheader()
         writer.writerows(joined)
+    temporary.replace(output)
+    output = data_dir / "result_coverage.csv"
+    temporary = output.with_suffix(".tmp")
+    with temporary.open("w", encoding="utf-8-sig", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=COVERAGE_FIELDS, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(summary["result_coverage"]["races"])
     temporary.replace(output)
 
 

@@ -1,0 +1,103 @@
+name: Omura Results History
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "13 2,8,14,20 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: omura-data-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Get repository files
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Choose historical dates
+        id: dates
+        run: |
+          python - <<'PY'
+          from datetime import date, datetime, timedelta, timezone
+          from pathlib import Path
+          import os
+
+          today = datetime.now(timezone(timedelta(hours=9))).date()
+          path = Path("data/history_cursor.txt")
+          start = date.fromisoformat(path.read_text().strip() if path.exists() else "2024-10-15")
+          end = min(start + timedelta(days=30), today)
+          days = max(0, (end - start).days)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print(f"race_date={start}", file=output)
+              print(f"collect_days={days}", file=output)
+              print(f"next_date={end}", file=output)
+          print(f"結果収集: {start}から{days}日分。未公開・解析失敗時は進行位置を維持します。")
+          PY
+
+      - name: Set up Python
+        if: steps.dates.outputs.collect_days != '0'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        if: steps.dates.outputs.collect_days != '0'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Collect historical results
+        id: results
+        if: steps.dates.outputs.collect_days != '0'
+        env:
+          RACE_DATE: ${{ steps.dates.outputs.race_date }}
+          COLLECT_DAYS: ${{ steps.dates.outputs.collect_days }}
+        run: python collect_data.py
+
+      - name: Advance only after the complete batch succeeds
+        if: steps.results.outcome == 'success'
+        env:
+          NEXT_DATE: ${{ steps.dates.outputs.next_date }}
+        run: |
+          test -n "$NEXT_DATE"
+          printf '%s\n' "$NEXT_DATE" > data/history_cursor.tmp
+          mv data/history_cursor.tmp data/history_cursor.txt
+
+      - name: Rebuild validation and model
+        if: ${{ !cancelled() && steps.dates.outputs.collect_days != '0' && steps.checkout.outcome == 'success' }}
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+        run: |
+          python build_validation.py
+          python train_model.py
+
+      - name: Save verified days even after a later download fails
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for FILE in data/omura_results.csv data/omura_void_races.csv data/history_cursor.txt data/validation_summary.json data/validation_races.csv data/result_coverage.csv data/prediction_model.json; do
+            if [ -f "$FILE" ]; then
+              git add -- "$FILE"
+            fi
+          done
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "Collect historical Omura results"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi

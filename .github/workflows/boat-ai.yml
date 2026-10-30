@@ -176,7 +176,7 @@ jobs:
             git add data/omura_entries.csv
           fi
 
-          for FILE in data/validation_summary.json data/validation_races.csv data/prediction_model.json; do
+          for FILE in data/omura_void_races.csv data/validation_summary.json data/validation_races.csv data/result_coverage.csv data/prediction_model.json; do
             if [ -f "$FILE" ]; then
               git add -- "$FILE"
             fi
