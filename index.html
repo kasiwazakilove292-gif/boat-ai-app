@@ -28,7 +28,8 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;p
 .hidden{display:none!important}.record{border-top:1px solid #e4eaf0;padding:10px 0}.record:first-child{border-top:0}
 footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 @media(min-width:600px){main{padding:20px}.grid{grid-template-columns:1fr 1fr 1fr}}
-@media(max-width:420px){.nav{gap:5px}.nav button{font-size:12px;padding:10px 9px}}
+@media(max-width:520px){.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.nav button{font-size:12px;padding:10px 8px}}
+.forecast-pick{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #e4eaf0}.forecast-pick b{font-size:20px;letter-spacing:2px}.forecast-pick button{width:auto;font-size:12px;margin:0}.forecast-pick p{margin:5px 0 0}.forecast-first{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.forecast-first>div{background:#f1f5f8;border-radius:12px;padding:9px}.forecast-first .lane{width:24px;height:24px;margin-right:4px}.forecast-first b{font-size:14px}#forecast .grid{grid-template-columns:1fr 1fr}button:disabled{opacity:.55}#modelDetails{font-size:12px;line-height:1.6}#modelDetails summary{cursor:pointer;color:#1769aa}
 .racer{border:1px solid #e0e7ed;border-radius:13px;padding:12px;margin-top:10px}
 .lane{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #aebcc7;border-radius:8px;font-weight:800;margin-right:8px;flex-shrink:0}
 .lane1{background:#fff;color:#172b3a}.lane2{background:#222;color:#fff}.lane3{background:#df333e;color:#fff}.lane4{background:#1769aa;color:#fff}.lane5{background:#ffdf50;color:#172b3a}.lane6{background:#07865b;color:#fff}
@@ -50,6 +51,7 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <main>
 <div class="nav">
 <button class="active" data-tab="race">出走表</button>
+<button data-tab="forecast">自動予想</button>
 <button data-tab="predict">買い目記録</button>
 <button data-tab="results">結果入力</button>
 <button data-tab="stats">成績</button>
@@ -83,10 +85,28 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <p class="muted">展示情報は公開後に表示されます。収集は日中15分間隔の予定です。更新ボタンで保存済みの最新情報を読み込めます。締切や開催状況は公式サイトでも確認してください。</p>
 </section>
 
+<section id="forecast" class="hidden">
+<div class="card">
+<div class="row"><h2 style="margin:0">学習モデルの予想</h2><span class="pill">v1・検証中</span></div>
+<p class="muted">艇番・選手の勝率・モーター2連率・平均ST・F回数から着順の確率を推定します。展示・気象・直前オッズは今回のモデルに含みません。</p>
+<div class="grid">
+<div class="field"><label for="forecastDate">レース日</label><input id="forecastDate" type="date"></div>
+<div class="field"><label for="forecastRace">レース番号</label><select id="forecastRace"></select></div>
+</div>
+<div class="field"><label for="forecastType">券種</label><select id="forecastType"><option>3連単</option><option>2連単</option><option>3連複</option></select></div>
+<button id="runForecast" class="btn">このレースを予想</button>
+<button id="latestForecast" class="btn secondary hidden">保存済みの最新日で見る</button>
+<p id="forecastStatus" class="muted" role="status" aria-live="polite">出走表が6艇そろったレースを予想できます。</p>
+</div>
+<div id="forecastOutput"></div>
+<div id="modelReport" class="card"><h2>モデルの時系列テスト</h2><p class="muted">モデルを読み込むと、学習に使わなかった期間の成績を表示します。</p></div>
+</section>
+
 <section id="predict" class="hidden">
 <div class="card">
 <h2>ペーパーテスト用の記録</h2>
-<div class="warn">出走表・展示情報を確認しながらペーパーテストを記録できます。自動予想は準備中です。推定確率は自分で入力してください。</div>
+<div class="warn">出走表・展示情報を確認しながらペーパーテストを記録できます。「自動予想」から候補と推定確率を引き継ぐこともできます。</div>
+<p id="forecastRecordNote" class="warn hidden"></p>
 <form id="pickForm" style="margin-top:14px">
 <div class="grid">
 <div class="field"><label>レース日</label><input id="raceDate" type="date" required></div>
@@ -95,7 +115,7 @@ footer{text-align:center;padding:10px 20px;color:#6b7b88;font-size:11px}
 <div class="field"><label>券種</label><select id="betType"><option>3連単</option><option>2連単</option><option>3連複</option></select></div>
 <div class="field"><label>買い目</label><input id="combination" placeholder="例：1-2-3" required></div>
 <div class="field"><label>オッズ（倍）</label><input id="odds" type="number" min="1" max="10000" step=".1" value="10" required></div>
-<div class="field"><label>自分の推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".01" value="10" required></div>
+<div class="field"><label>推定的中確率（%）</label><input id="prob" type="number" min=".01" max="99.99" step=".01" value="10" required></div>
 <div class="field"><label>購入候補額（円）</label><input id="stake" type="number" min="0" max="5000" step="100" value="100" required></div>
 <div class="field wide"><label>メモ（任意）</label><input id="notes" placeholder="展示・風・予想理由など"></div>
 </div>
@@ -164,6 +184,7 @@ const $=id=>document.getElementById(id);
 const STORE="boat_ai_pwa_v1";
 const E=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let records=JSON.parse(localStorage.getItem(STORE)||"[]");
+let pendingForecast=null;
 
 for(let i=1;i<=12;i++)$("raceNo").add(new Option(i+"R",i));
 $("raceDate").value=new Date().toLocaleDateString("sv-SE");
@@ -176,6 +197,9 @@ function yen(v){
  return "¥"+Math.round(v).toLocaleString("ja-JP");
 }
 function evUpdate(){
+ if($("odds").value.trim()===""||$("prob").value.trim()===""){
+  $("ev").textContent="—";$("profit").textContent="—";$("ev").style.color="";return;
+ }
  const p=Number($("prob").value||0)/100;
  const o=Number($("odds").value||0);
  const ev=p*o*100;
@@ -191,7 +215,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
  document.querySelectorAll(".nav button").forEach(x=>{
   x.classList.toggle("active",x===b);
  });
- ["race","predict","results","stats","validation"].forEach(t=>{
+ ["race","forecast","predict","results","stats","validation"].forEach(t=>{
   $(t).classList.toggle("hidden",t!==b.dataset.tab);
  });
  render();
@@ -229,6 +253,11 @@ $("pickForm").onsubmit=e=>{
   return;
  }
 
+ const provenance=pendingForecast&&pendingForecast.date===date
+  &&pendingForecast.venue===venue&&pendingForecast.raceNo===raceNo
+  &&pendingForecast.betType===$("betType").value&&pendingForecast.combination===combination
+  &&Math.abs(pendingForecast.probability-Number($("prob").value)/100)<1e-9
+  ?pendingForecast:null;
  records.unshift({
   id:Date.now(),
   created:new Date().toISOString(),
@@ -240,11 +269,20 @@ $("pickForm").onsubmit=e=>{
   stake,
   result:"未確定",
   payout:0,
-  notes:$("notes").value
+  notes:$("notes").value,
+  ...(provenance?{
+   modelVersion:provenance.modelVersion,modelTrainedThrough:provenance.modelTrainedThrough,
+   predictionGeneratedAt:provenance.predictionGeneratedAt,
+   predictionMode:provenance.predictionMode==="paper_before_deadline"
+    &&Date.now()>=Date.parse(provenance.deadline)?"reference_after_deadline":provenance.predictionMode,
+   predictionEntryCollectedAt:provenance.entryCollectedAt
+  }:{})
  });
  save();
  $("combination").value="";
  $("notes").value="";
+ pendingForecast=null;
+ $("forecastRecordNote").classList.add("hidden");
  alert("ペーパーテストに記録しました。");
 };
 
@@ -294,7 +332,7 @@ function render(){
  ${records.map(r=>`<tr>
  <td>${E(r.date)}<br>${E(r.venue)} ${r.raceNo}R</td>
  <td>${E(r.betType)}<br>${E(r.combination)}<br>
- <small>オッズ ${E(r.odds)} / 確率 ${(r.probability*100).toFixed(1)}%</small></td>
+ <small>オッズ ${E(r.odds)} / 確率 ${(r.probability*100).toFixed(1)}%</small>${r.modelVersion?`<br><small>モデルv1 ${r.predictionMode==="paper_before_deadline"?"締切前の端末記録":"参考記録"}</small>`:""}</td>
  <td>${yen(r.stake)}</td><td>${E(r.result)}${r.resultSource==="official_saved_trifecta"?"<br><small>公式結果と照合</small>":""}</td><td>${yen(r.payout)}</td>
  </tr>`).join("")}
  </tbody></table>`:"<p class='muted'>記録はまだありません。</p>";
@@ -317,17 +355,20 @@ window.settle=id=>{
 };
 
 $("export").onclick=()=>{
- const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes","resultSource","matchedAt"];
+ const cols=["date","venue","raceNo","betType","combination","odds","probability","stake","result","payout","notes","resultSource","matchedAt","modelVersion","modelTrainedThrough","predictionGeneratedAt","predictionMode","predictionEntryCollectedAt"];
  const esc=x=>'"'+String(x??"").replaceAll('"','""')+'"';
  const csv=[
   cols.join(","),
   ...records.map(r=>cols.map(c=>esc(r[c])).join(","))
  ].join("\r\n");
  const a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));
+ const downloadURL=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));
+ a.href=downloadURL;
  a.download="boat_ai_records.csv";
+ document.body.append(a);
  a.click();
- URL.revokeObjectURL(a.href);
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(downloadURL),1000);
 };
 
 $("clear").onclick=()=>{
@@ -347,7 +388,7 @@ const DATA_ROOT=location.hostname.endsWith(".github.io")
  ?"https://raw.githubusercontent.com/kasiwazakilove292-gif/boat-ai-app/main/data/"
  :new URL("./data/",location.href).href;
 const DATA_CACHE="boat_ai_race_data_v1";
-let entries=[],beforeInfo=[],dataError="",loadingData=false;
+let entries=[],beforeInfo=[],dataError="",loadingData=false,raceDataRequest=null;
 
 const jstDate=()=>new Intl.DateTimeFormat("sv-SE",{
  timeZone:"Asia/Tokyo",
@@ -528,7 +569,7 @@ function renderRace(){
  updateDataAge();
 }
 
-async function loadRaceData(){
+async function performRaceDataLoad(){
  if(loadingData)return;
  loadingData=true;
  $("refreshData").disabled=true;
@@ -561,6 +602,11 @@ async function loadRaceData(){
  renderRace();
 }
 
+function loadRaceData(){
+ if(!raceDataRequest)raceDataRequest=performRaceDataLoad().finally(()=>{raceDataRequest=null;});
+ return raceDataRequest;
+}
+
 for(let i=1;i<=12;i++){
  $("dataRace").add(new Option(i+"R",i));
 }
@@ -582,5 +628,7 @@ loadRaceData();
 setInterval(updateDataAge,60000);
 </script>
 <script src="./validation.js"></script>
+<script src="./prediction-model.js"></script>
+<script src="./forecast-ui.js"></script>
 </body>
 </html>

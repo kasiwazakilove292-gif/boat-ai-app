@@ -54,7 +54,7 @@
      <tbody>${table}</tbody>
     </table></div>
     <p class="muted">1レース1点・100円固定。的中時は公式の100円あたり払戻を加算し、回収率＝払戻合計÷記録額合計で計算します。全国勝率は保存済みの出走表の値を使い、同率は艇番順にします。両ルールは同じ対象レースで比較しています。</p>
-    <p class="muted">学習・最適化は行っていません。直近20%も同じ固定ルールを再集計した参考値です。データのない日や不成立レースは含めず、結果が増えると対象期間は変わります。</p>
+    <p class="muted">この2つの固定ルールでは学習・最適化は行っていません。直近20%も同じ固定ルールを再集計した参考値です。学習モデルのテスト成績は「自動予想」で確認できます。データのない日や不成立レースは含めず、結果が増えると対象期間は変わります。</p>
     <a id="validationCSV" class="muted" href="${E(DATA_ROOT)}validation_races.csv" target="_blank" rel="noopener">レースごとの検証CSVを開く ↗</a>
    </div>`;
   $("benchmarkWindow").value=windowName;
