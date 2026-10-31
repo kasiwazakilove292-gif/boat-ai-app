@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-31T13:16:57+00:00",
+  "generated_at": "2026-10-31T15:13:22+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -12,7 +12,7 @@
   "sources": [
     {
       "file": "omura_entries.csv",
-      "sha256": "5930639661cf11a324b8136aa8e8996727ccc2fb0a22cd7a75d8b657ac4aea46"
+      "sha256": "966bbd2883383523bdca27c892318aa851bcd8505aa23ba77e9b5e6614aaa0ef"
     },
     {
       "file": "omura_results.csv",
@@ -93,7 +93,7 @@
     "recent_days": 68
   },
   "result_coverage": {
-    "as_of_date": "2026-10-31",
+    "as_of_date": "2026-11-01",
     "history_cursor": "2026-05-13",
     "total_unmatched": 869,
     "categories": [
@@ -110,12 +110,12 @@
       {
         "status": "current_or_future",
         "label": "当日・未来（結果待ちを含む）",
-        "races": 12
+        "races": 0
       },
       {
         "status": "history_pending",
         "label": "過去収集の進行待ち",
-        "races": 852
+        "races": 864
       },
       {
         "status": "past_unresolved",
