@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-31T08:24:14+00:00",
+  "generated_at": "2026-10-31T09:04:06+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -12,7 +12,7 @@
   "sources": [
     {
       "file": "omura_entries.csv",
-      "sha256": "23d1753dde4424534a7c1d4c17df8613fe4495f2caa171b3eadbd8b4d7842af2"
+      "sha256": "46e337178542c55632bd4ee7d1b8f7b12d902b55b1c4de69bf30d509962b4da7"
     },
     {
       "file": "omura_results.csv",
@@ -56,11 +56,11 @@
     },
     {
       "file": "beforeinfo/2026-10-31.csv",
-      "sha256": "473389378a4009dc167e8079227758ac336c58408029c11a9ca76ce58019a5cc"
+      "sha256": "a4c343097e4bec7a09473bbe359e1c5bb84307993435cc80ffa7fc57050a6917"
     },
     {
       "file": "omura_beforeinfo.csv",
-      "sha256": "0c004ca54c88392446e63a21d3e24205a9e53b93c0ef3e5d34bbfac164297d1e"
+      "sha256": "4a8558d5a5d37a59b4ee17e53817b01f2fc1374f01b92a8d102da5157b0b2bc0"
     },
     {
       "file": "history_cursor.txt",
@@ -82,7 +82,7 @@
     "joined_races_without_valid_rates": 0,
     "entry_races_without_results": 869,
     "beforeinfo_races": 120,
-    "predeadline_exhibition_races": 46,
+    "predeadline_exhibition_races": 47,
     "predeadline_exhibition_with_result": 46,
     "retrospective_entry_races": 4051,
     "entry_timestamp_unknown_races": 0,
