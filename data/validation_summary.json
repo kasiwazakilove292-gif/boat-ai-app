@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-31T11:40:13+00:00",
+  "generated_at": "2026-10-31T12:15:28+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -12,7 +12,7 @@
   "sources": [
     {
       "file": "omura_entries.csv",
-      "sha256": "c42bb93e41a8a9652377228b7eca29d39744b0d1d732d10e4421cc57ed305b03"
+      "sha256": "0ac483f2baae81d80c0b593ca3fe1a4fadaabcbd6a973100add06f6b0f6f5cce"
     },
     {
       "file": "omura_results.csv",
@@ -56,11 +56,11 @@
     },
     {
       "file": "beforeinfo/2026-10-31.csv",
-      "sha256": "f23ac136025024e952d6bcafc985935cef837667d35ce06754acffd74288351d"
+      "sha256": "98090bab24e8702ffb01548a99c29747010183b2eacacbd7607777f134ba9eb5"
     },
     {
       "file": "omura_beforeinfo.csv",
-      "sha256": "e23360286ce33b16960807b2c537a2ba4b89d7b0d9448edab682a9b7745b10fe"
+      "sha256": "489eae417186d7c0b619d9136b5113d92f3f64f039d84c026a138a7967ed1106"
     },
     {
       "file": "history_cursor.txt",
