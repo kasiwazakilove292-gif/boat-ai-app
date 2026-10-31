@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T20:49:44+00:00",
+  "generated_at": "2026-10-31T00:56:54+00:00",
   "method": {
     "kind": "retrospective_fixed_rules",
     "stake_per_race_yen": 100,
@@ -12,7 +12,7 @@
   "sources": [
     {
       "file": "omura_entries.csv",
-      "sha256": "53c428a42faa8949dbc29f4fadc04bc00e9c1963a497fc9f69845730070c41a7"
+      "sha256": "ec432efcbc4dd4eaf8afb544db4135a5b499f3c0504b2646aa66947bec0bb2d8"
     },
     {
       "file": "omura_results.csv",
@@ -68,15 +68,15 @@
     }
   ],
   "data": {
-    "entry_rows": 29448,
-    "entry_races": 4908,
-    "complete_entry_races": 4908,
+    "entry_rows": 29520,
+    "entry_races": 4920,
+    "complete_entry_races": 4920,
     "result_rows": 4051,
     "valid_result_races": 4051,
     "eligible_races": 4051,
     "result_races_without_complete_entries": 0,
     "joined_races_without_valid_rates": 0,
-    "entry_races_without_results": 857,
+    "entry_races_without_results": 869,
     "beforeinfo_races": 108,
     "predeadline_exhibition_races": 46,
     "predeadline_exhibition_with_result": 46,
@@ -91,7 +91,7 @@
   "result_coverage": {
     "as_of_date": "2026-10-31",
     "history_cursor": "2026-05-13",
-    "total_unmatched": 857,
+    "total_unmatched": 869,
     "categories": [
       {
         "status": "invalid_result",
@@ -106,7 +106,7 @@
       {
         "status": "current_or_future",
         "label": "当日・未来（結果待ちを含む）",
-        "races": 0
+        "races": 12
       },
       {
         "status": "history_pending",
@@ -422,6 +422,10 @@
       },
       {
         "date": "2026-10-09",
+        "races": 12
+      },
+      {
+        "date": "2026-10-31",
         "races": 12
       }
     ]
