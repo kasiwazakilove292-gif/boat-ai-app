@@ -3,7 +3,7 @@
   "algorithm": "entry_pl_v1",
   "version": "entry_pl_v1_e77ad2648ee9",
   "training_data_sha256": "e77ad2648ee916adc016c1fddd1330ecf01867a2975353873d575026d26291bc",
-  "generated_at": "2026-10-31T00:56:56+00:00",
+  "generated_at": "2026-10-31T02:00:12+00:00",
   "features": [
     "lane_1",
     "lane_2",
@@ -106,7 +106,7 @@
           "low": 0.1,
           "high": 0.2,
           "races": 219,
-          "mean_probability": 0.12643301091173267,
+          "mean_probability": 0.12643301091173273,
           "actual_hit_rate": 0.1689497716894977
         },
         {
